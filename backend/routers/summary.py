@@ -94,7 +94,9 @@ def get_summary_by_aguaje(
 def get_summary_by_pond(
     db: Session = Depends(get_db),
     year: Optional[int] = Query(None),
-    sector: Optional[str] = Query(None)
+    sector: Optional[str] = Query(None),
+    month: Optional[str] = Query(None),
+    aguaje: Optional[str] = Query(None)
 ):
     # Aggregates KPIs by pond code (Hoja2 pivot style)
     query = db.query(
@@ -113,6 +115,10 @@ def get_summary_by_pond(
         query = query.filter(Cycle.year == year)
     if sector is not None:
         query = query.filter(Cycle.sector == sector)
+    if month is not None:
+        query = query.filter(Cycle.month == month.upper())
+    if aguaje is not None:
+        query = query.filter(Cycle.aguaje == aguaje)
 
     results = query.group_by(Cycle.pond_code).all()
 

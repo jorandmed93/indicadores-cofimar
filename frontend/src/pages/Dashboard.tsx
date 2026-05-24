@@ -131,6 +131,10 @@ const Dashboard: React.FC<DashboardProps> = ({ setActiveTab, setSelectedPondCode
     .sort((a, b) => b.avg_lbs_ha - a.avg_lbs_ha)
     .slice(0, 10);
 
+  const sortedSectors = [...sectorSummary]
+    .sort((a, b) => b.avg_lbs_ha - a.avg_lbs_ha);
+  const leaderSector = sortedSectors[0];
+
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
       return (
@@ -213,11 +217,19 @@ const Dashboard: React.FC<DashboardProps> = ({ setActiveTab, setSelectedPondCode
                   <h3 className="text-base font-bold text-cofimar-text">Rendimiento por Sector</h3>
                   <p className="text-[10px] font-mono text-cofimar-text-muted">Promedio de Libras por Hectárea (LBS/HA)</p>
                 </div>
+                {leaderSector && (
+                  <div className="flex items-center space-x-2 bg-cofimar-primary/10 border border-cofimar-primary/20 px-3 py-1.5 rounded-lg">
+                    <span className="text-[10px] font-mono text-cofimar-primary uppercase font-bold">Líder: {leaderSector.sector}</span>
+                    <span className="text-[10px] font-mono text-cofimar-text font-bold bg-cofimar-primary/20 px-1.5 py-0.5 rounded">
+                      {Math.round(leaderSector.avg_lbs_ha).toLocaleString()} LBS/HA
+                    </span>
+                  </div>
+                )}
               </div>
               
               <div className="h-80">
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={sectorSummary}>
+                  <BarChart data={sortedSectors}>
                     <CartesianGrid strokeDasharray="3 3" stroke="var(--cofimar-border)" vertical={false} />
                     <XAxis dataKey="sector" stroke="var(--cofimar-text-muted)" fontSize={9} tickLine={false} />
                     <YAxis stroke="var(--cofimar-text-muted)" fontSize={9} tickLine={false} />
