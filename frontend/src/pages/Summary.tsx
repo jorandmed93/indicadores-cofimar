@@ -42,11 +42,11 @@ const Summary: React.FC = () => {
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
       return (
-        <div className="bg-cofimar-surface border border-cofimar-border p-3.5 rounded-lg shadow-2xl">
-          <p className="text-xs font-bold text-cofimar-text mb-2">{label}</p>
+        <div className="bg-cofimar-surface border border-cofimar-border p-4.5 rounded-xl shadow-2xl">
+          <p className="text-sm font-bold text-cofimar-text mb-2.5">{label}</p>
           {payload.map((item: any, idx: number) => (
             <p key={idx} className="text-xs font-mono" style={{ color: item.color }}>
-              {item.name}: <span className="font-bold">
+              {item.name}: <span className="font-bold text-sm">
                 {item.name.includes('%') || item.name.includes('Sobrevivencia') 
                   ? `${parseFloat(item.value).toFixed(1)}%` 
                   : item.name.includes('FCA') 
@@ -64,23 +64,23 @@ const Summary: React.FC = () => {
 
   const renderTable = (data: any[], columns: { key: string; label: string; align?: string; format?: (v: any, row?: any) => string; bold?: boolean; color?: string }[]) => (
     <div className="overflow-x-auto">
-      <table className="w-full text-left text-xs whitespace-nowrap">
-        <thead className="bg-cofimar-surface-secondary text-cofimar-text-muted font-mono border-b border-cofimar-border">
+      <table className="w-full text-left text-sm whitespace-nowrap">
+        <thead className="bg-cofimar-surface-secondary text-cofimar-text-muted font-mono text-xs uppercase tracking-wider border-b border-cofimar-border">
           <tr>
             {columns.map((col, i) => (
-              <th key={i} className={`py-3.5 px-4 ${col.align === 'right' ? 'text-right' : ''} ${i === 0 ? 'rounded-l-lg' : ''} ${i === columns.length - 1 ? 'rounded-r-lg' : ''}`}>
+              <th key={i} className={`py-4.5 px-5.5 ${col.align === 'right' ? 'text-right' : ''} ${i === 0 ? 'rounded-l-lg' : ''} ${i === columns.length - 1 ? 'rounded-r-lg' : ''}`}>
                 {col.label}
               </th>
             ))}
           </tr>
         </thead>
-        <tbody className="divide-y divide-cofimar-border">
+        <tbody className="divide-y divide-cofimar-border font-mono">
           {data.map((row, idx) => (
             <tr key={idx} className="hover:bg-cofimar-surface-secondary transition">
               {columns.map((col, i) => {
                 const val = col.format ? col.format(row[col.key], row) : row[col.key];
                 return (
-                  <td key={i} className={`py-3 px-4 font-mono ${col.align === 'right' ? 'text-right' : ''} ${col.bold ? 'font-bold' : ''} ${col.color === 'primary' ? 'text-cofimar-primary' : col.color === 'accent' ? 'text-cofimar-accent' : i === 0 ? 'font-bold text-cofimar-text' : 'text-cofimar-text'}`}>
+                  <td key={i} className={`py-4 px-5.5 ${col.align === 'right' ? 'text-right' : ''} ${col.bold ? 'font-bold text-sm' : 'text-sm'} ${col.color === 'primary' ? 'text-cofimar-primary font-bold' : col.color === 'accent' ? 'text-cofimar-accent font-bold' : i === 0 ? 'font-bold text-cofimar-text' : 'text-cofimar-text'}`}>
                     {val}
                   </td>
                 );
@@ -136,8 +136,8 @@ const Summary: React.FC = () => {
         <div className="space-y-8">
           {/* SECTORS */}
           {activeSubTab === 'sector' && (
-            <div className="grid grid-cols-1 xl:grid-cols-3 gap-7">
-              <div className="glass-card p-6 rounded-lg xl:col-span-2 shadow-sm">
+            <div className="space-y-7">
+              <div className="glass-card p-6 rounded-lg shadow-sm">
                 <h3 className="text-base font-bold text-cofimar-text mb-4">Rendimientos por Sector Productivo</h3>
                 {renderTable(sectorsData, [
                   { key: 'sector', label: 'SECTOR', bold: true },
@@ -149,15 +149,15 @@ const Summary: React.FC = () => {
                 ])}
               </div>
               <div className="glass-card p-6 rounded-lg shadow-sm flex flex-col justify-between">
-                <h3 className="text-base font-bold text-cofimar-text mb-4">LBS/HA por Sector</h3>
-                <div className="h-72">
+                <h3 className="text-base font-bold text-cofimar-text mb-4">Análisis de Rendimiento LBS/HA por Sector</h3>
+                <div className="h-[420px] mt-2">
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={sectorsData} layout="vertical">
-                      <CartesianGrid strokeDasharray="3 3" stroke="var(--cofimar-border)" horizontal={false} />
-                      <XAxis type="number" stroke="var(--cofimar-text-muted)" fontSize={8} tickLine={false} />
-                      <YAxis dataKey="sector" type="category" stroke="var(--cofimar-text-muted)" fontSize={8} tickLine={false} width={80} />
+                    <BarChart data={sectorsData}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="var(--cofimar-border)" vertical={false} />
+                      <XAxis dataKey="sector" stroke="var(--cofimar-text-muted)" fontSize={12} tickLine={false} />
+                      <YAxis stroke="var(--cofimar-text-muted)" fontSize={12} tickLine={false} />
                       <Tooltip content={<CustomTooltip />} />
-                      <Bar dataKey="avg_lbs_ha" fill="#34C759" radius={[0, 4, 4, 0]} name="LBS/HA" />
+                      <Bar dataKey="avg_lbs_ha" fill="#34C759" radius={[4, 4, 0, 0]} name="LBS/HA" />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
@@ -167,8 +167,8 @@ const Summary: React.FC = () => {
 
           {/* AGUAJE */}
           {activeSubTab === 'aguaje' && (
-            <div className="grid grid-cols-1 xl:grid-cols-3 gap-7">
-              <div className="glass-card p-6 rounded-lg xl:col-span-2 shadow-sm">
+            <div className="space-y-7">
+              <div className="glass-card p-6 rounded-lg shadow-sm">
                 <h3 className="text-base font-bold text-cofimar-text mb-4">Rendimiento por Aguaje (Influencia Marea)</h3>
                 {renderTable(aguajesData, [
                   { key: 'aguaje', label: 'AGUAJE', bold: true },
@@ -179,13 +179,13 @@ const Summary: React.FC = () => {
                 ])}
               </div>
               <div className="glass-card p-6 rounded-lg shadow-sm flex flex-col justify-between">
-                <h3 className="text-base font-bold text-cofimar-text mb-4">LBS/HA por Aguaje</h3>
-                <div className="h-72">
+                <h3 className="text-base font-bold text-cofimar-text mb-4">Análisis de Rendimiento LBS/HA por Aguaje</h3>
+                <div className="h-[420px] mt-2">
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={aguajesData}>
                       <CartesianGrid strokeDasharray="3 3" stroke="var(--cofimar-border)" vertical={false} />
-                      <XAxis dataKey="aguaje" stroke="var(--cofimar-text-muted)" fontSize={8} tickLine={false} />
-                      <YAxis stroke="var(--cofimar-text-muted)" fontSize={8} tickLine={false} />
+                      <XAxis dataKey="aguaje" stroke="var(--cofimar-text-muted)" fontSize={12} tickLine={false} />
+                      <YAxis stroke="var(--cofimar-text-muted)" fontSize={12} tickLine={false} />
                       <Tooltip content={<CustomTooltip />} />
                       <Bar dataKey="avg_lbs_ha" fill="#FF9500" radius={[4, 4, 0, 0]} name="LBS/HA" />
                     </BarChart>
@@ -197,8 +197,8 @@ const Summary: React.FC = () => {
 
           {/* MONTHLY */}
           {activeSubTab === 'month' && (
-            <div className="grid grid-cols-1 xl:grid-cols-3 gap-7">
-              <div className="glass-card p-6 rounded-lg xl:col-span-2 shadow-sm">
+            <div className="space-y-7">
+              <div className="glass-card p-6 rounded-lg shadow-sm">
                 <h3 className="text-base font-bold text-cofimar-text mb-4">Rendimiento Histórico Mensual</h3>
                 {renderTable(monthsData, [
                   { key: 'year', label: 'AÑO / MES', bold: true, format: (v: any, row: any) => `${v} / ${row.month}` },
@@ -209,15 +209,15 @@ const Summary: React.FC = () => {
                 ])}
               </div>
               <div className="glass-card p-6 rounded-lg shadow-sm flex flex-col justify-between">
-                <h3 className="text-base font-bold text-cofimar-text mb-4">Evolución LBS/HA Mensual</h3>
-                <div className="h-72">
+                <h3 className="text-base font-bold text-cofimar-text mb-4">Evolución Histórica Mensual LBS/HA</h3>
+                <div className="h-[420px] mt-2">
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart data={monthsData}>
                       <CartesianGrid strokeDasharray="3 3" stroke="var(--cofimar-border)" vertical={false} />
-                      <XAxis dataKey="month" stroke="var(--cofimar-text-muted)" fontSize={8} tickLine={false} />
-                      <YAxis stroke="var(--cofimar-text-muted)" fontSize={8} tickLine={false} />
+                      <XAxis dataKey="month" stroke="var(--cofimar-text-muted)" fontSize={12} tickLine={false} />
+                      <YAxis stroke="var(--cofimar-text-muted)" fontSize={12} tickLine={false} />
                       <Tooltip content={<CustomTooltip />} />
-                      <Line type="monotone" dataKey="avg_lbs_ha" stroke="#34C759" strokeWidth={2.5} activeDot={{ r: 6 }} name="LBS/HA" />
+                      <Line type="monotone" dataKey="avg_lbs_ha" stroke="#34C759" strokeWidth={3} activeDot={{ r: 7 }} name="LBS/HA" />
                     </LineChart>
                   </ResponsiveContainer>
                 </div>
