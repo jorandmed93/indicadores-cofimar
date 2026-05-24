@@ -63,8 +63,8 @@ const Summary: React.FC = () => {
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
       return (
-        <div className="bg-cofimar-surface border border-cofimar-border p-4.5 rounded-xl shadow-2xl">
-          <p className="text-sm font-bold text-cofimar-text mb-2.5">{label}</p>
+        <div className="bg-cofimar-surface border border-cofimar-border p-4 rounded-xl shadow-2xl">
+          <p className="text-sm font-bold text-cofimar-text mb-2">{label}</p>
           {payload.map((item: any, idx: number) => (
             <p key={idx} className="text-xs font-mono" style={{ color: item.color }}>
               {item.name}: <span className="font-bold text-sm">
@@ -93,7 +93,7 @@ const Summary: React.FC = () => {
         <thead className="bg-cofimar-surface-secondary text-cofimar-text-muted font-mono text-xs uppercase tracking-wider border-b border-cofimar-border">
           <tr>
             {columns.map((col, i) => (
-              <th key={i} className={`py-4.5 px-5.5 ${col.align === 'right' ? 'text-right' : ''} ${i === 0 ? 'rounded-l-lg' : ''} ${i === columns.length - 1 ? 'rounded-r-lg' : ''}`}>
+              <th key={i} className={`py-4 px-6 ${col.align === 'right' ? 'text-right' : ''} ${i === 0 ? 'rounded-l-lg' : ''} ${i === columns.length - 1 ? 'rounded-r-lg' : ''}`}>
                 {col.label}
               </th>
             ))}
@@ -109,7 +109,7 @@ const Summary: React.FC = () => {
               {columns.map((col, i) => {
                 const val = col.format ? col.format(row[col.key], row) : row[col.key];
                 return (
-                  <td key={i} className={`py-4 px-5.5 ${col.align === 'right' ? 'text-right' : ''} ${col.bold ? 'font-bold text-sm' : 'text-sm'} ${col.color === 'primary' ? 'text-cofimar-primary font-bold' : col.color === 'accent' ? 'text-cofimar-accent font-bold' : i === 0 ? 'font-bold text-cofimar-text' : 'text-cofimar-text'}`}>
+                  <td key={i} className={`py-4 px-6 ${col.align === 'right' ? 'text-right' : ''} ${col.bold ? 'font-bold text-sm' : 'text-sm'} ${col.color === 'primary' ? 'text-cofimar-primary font-bold' : col.color === 'accent' ? 'text-cofimar-accent font-bold' : i === 0 ? 'font-bold text-cofimar-text' : 'text-cofimar-text'}`}>
                     {val}
                   </td>
                 );
@@ -279,7 +279,7 @@ const Summary: React.FC = () => {
               </div>
               <button 
                 onClick={() => setSelectedGroup(null)}
-                className="bg-cofimar-bg/60 hover:bg-cofimar-bg border border-cofimar-border text-cofimar-text hover:text-cofimar-primary px-4.5 py-2.5 rounded-xl text-xs font-mono font-bold transition-all shadow-sm"
+                className="bg-cofimar-bg/60 hover:bg-cofimar-bg border border-cofimar-border text-cofimar-text hover:text-cofimar-primary px-5 py-2.5 rounded-xl text-xs font-mono font-bold transition-all shadow-sm"
               >
                 CERRAR
               </button>

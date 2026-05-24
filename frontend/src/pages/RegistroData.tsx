@@ -429,8 +429,8 @@ const RegistroData: React.FC<RegistroDataProps> = ({ role }) => {
 
       {/* Toast Success Message */}
       {successMsg && (
-        <div className="bg-cofimar-success/15 border border-cofimar-success/30 p-4.5 rounded-xl flex items-center gap-3.5 animate-fadeIn">
-          <CheckCircle2 className="w-5.5 h-5.5 text-cofimar-success" />
+        <div className="bg-cofimar-success/15 border border-cofimar-success/30 p-4 rounded-xl flex items-center gap-3 animate-fadeIn">
+          <CheckCircle2 className="w-5 h-5 text-cofimar-success" />
           <span className="text-sm font-medium text-cofimar-text">{successMsg}</span>
         </div>
       )}

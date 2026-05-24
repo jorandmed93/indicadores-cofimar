@@ -327,19 +327,19 @@ const Harvests: React.FC = () => {
                     </h3>
                     
                     <div className="grid grid-cols-2 gap-4">
-                      <div className="bg-cofimar-bg/20 border border-cofimar-border/60 p-4.5 rounded-xl shadow-sm">
+                      <div className="bg-cofimar-bg/20 border border-cofimar-border/60 p-5 rounded-xl shadow-sm">
                         <span className="text-[10px] font-mono text-cofimar-text-muted uppercase tracking-wider block">Sector</span>
                         <p className="text-xs font-bold text-cofimar-text mt-1.5">{selectedHarvest.sector || 'N/A'}</p>
                       </div>
-                      <div className="bg-cofimar-bg/20 border border-cofimar-border/60 p-4.5 rounded-xl shadow-sm">
+                      <div className="bg-cofimar-bg/20 border border-cofimar-border/60 p-5 rounded-xl shadow-sm">
                         <span className="text-[10px] font-mono text-cofimar-text-muted uppercase tracking-wider block">Jefe de Sector</span>
                         <p className="text-xs font-bold text-cofimar-text mt-1.5">{selectedHarvest.sector_chief || 'N/A'}</p>
                       </div>
-                      <div className="bg-cofimar-bg/20 border border-cofimar-border/60 p-4.5 rounded-xl shadow-sm">
+                      <div className="bg-cofimar-bg/20 border border-cofimar-border/60 p-5 rounded-xl shadow-sm">
                         <span className="text-[10px] font-mono text-cofimar-text-muted uppercase tracking-wider block">Mes / Período</span>
                         <p className="text-xs font-bold text-cofimar-text mt-1.5 font-mono">{selectedHarvest.month || 'N/A'}</p>
                       </div>
-                      <div className="bg-cofimar-bg/20 border border-cofimar-border/60 p-4.5 rounded-xl shadow-sm">
+                      <div className="bg-cofimar-bg/20 border border-cofimar-border/60 p-5 rounded-xl shadow-sm">
                         <span className="text-[10px] font-mono text-cofimar-text-muted uppercase tracking-wider block">Certificación</span>
                         <p className="text-xs font-bold text-cofimar-text mt-1.5">{selectedHarvest.certification || 'SIN CERTIFICACIÓN'}</p>
                       </div>
@@ -394,7 +394,7 @@ const Harvests: React.FC = () => {
                       <div className="bg-cofimar-surface-secondary px-4.5 py-2.5 border-b border-cofimar-border">
                         <span className="text-[10px] font-mono text-cofimar-text-muted uppercase font-bold tracking-wider">Muestreos de Gramaje (QC)</span>
                       </div>
-                      <div className="p-4.5 space-y-3">
+                      <div className="p-5 space-y-3">
                         <div className="flex justify-between text-xs">
                           <span className="text-cofimar-text-secondary">Gramaje Camaronera:</span>
                           <span className="font-mono text-cofimar-text font-bold">{parseFloat(selectedHarvest.gr_farm || 0).toFixed(2)} gr</span>
@@ -416,7 +416,7 @@ const Harvests: React.FC = () => {
 
                 {/* Extra Stats Indicator */}
                 {selectedHarvest.animals && (
-                  <div className="bg-cofimar-primary/5 border border-cofimar-primary/20 p-4.5 rounded-xl flex items-center justify-between shadow-sm">
+                  <div className="bg-cofimar-primary/5 border border-cofimar-primary/20 p-5 rounded-xl flex items-center justify-between shadow-sm">
                     <div className="flex items-center space-x-3">
                       <Award className="w-5 h-5 text-cofimar-primary" />
                       <span className="text-xs text-cofimar-text font-bold">Volumen Estimado de Animales Cosechados</span>
