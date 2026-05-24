@@ -414,7 +414,7 @@ const RegistroData: React.FC<RegistroDataProps> = ({ role }) => {
         {role === 'admin' ? (
           <button
             onClick={handleOpenCreate}
-            className="flex items-center justify-center space-x-2 bg-cofimar-surface-active hover:opacity-95 text-cofimar-surface-active-text font-semibold px-4.5 py-2.5 rounded-lg shadow-sm text-xs font-mono"
+            className="flex items-center justify-center space-x-2 bg-cofimar-surface-active hover:opacity-95 text-cofimar-surface-active-text font-semibold px-6 py-2.5 rounded-lg shadow-sm text-xs font-mono"
           >
             <Plus className="w-4 h-4" />
             <span>AGREGAR NUEVO REGISTRO</span>
@@ -770,7 +770,7 @@ const RegistroData: React.FC<RegistroDataProps> = ({ role }) => {
                       disabled={editMode}
                       value={pondForm.code}
                       onChange={(e) => setPondForm({ ...pondForm, code: e.target.value.toUpperCase() })}
-                      className="w-full bg-cofimar-bg/50 border border-cofimar-border rounded-lg px-4.5 py-2.5 font-mono text-sm text-cofimar-text focus:outline-none focus:border-cofimar-primary focus:ring-1 focus:ring-cofimar-primary/30 transition-all duration-200 disabled:opacity-50"
+                      className="w-full bg-cofimar-bg/50 border border-cofimar-border rounded-lg px-4 py-2.5 font-mono text-sm text-cofimar-text focus:outline-none focus:border-cofimar-primary focus:ring-1 focus:ring-cofimar-primary/30 transition-all duration-200 disabled:opacity-50"
                       placeholder="Ej: TU 02"
                     />
                   </div>
@@ -781,7 +781,7 @@ const RegistroData: React.FC<RegistroDataProps> = ({ role }) => {
                       type="text"
                       value={pondForm.sector}
                       onChange={(e) => setPondForm({ ...pondForm, sector: e.target.value.toUpperCase() })}
-                      className="w-full bg-cofimar-bg/50 border border-cofimar-border rounded-lg px-4.5 py-2.5 font-mono text-sm text-cofimar-text focus:outline-none focus:border-cofimar-primary focus:ring-1 focus:ring-cofimar-primary/30 transition-all duration-200"
+                      className="w-full bg-cofimar-bg/50 border border-cofimar-border rounded-lg px-4 py-2.5 font-mono text-sm text-cofimar-text focus:outline-none focus:border-cofimar-primary focus:ring-1 focus:ring-cofimar-primary/30 transition-all duration-200"
                       placeholder="Ej: TUNA"
                     />
                   </div>
@@ -794,7 +794,7 @@ const RegistroData: React.FC<RegistroDataProps> = ({ role }) => {
                       required
                       value={pondForm.hectares}
                       onChange={(e) => setPondForm({ ...pondForm, hectares: parseFloat(e.target.value) })}
-                      className="w-full bg-cofimar-bg/50 border border-cofimar-border rounded-lg px-4.5 py-2.5 font-mono text-sm text-cofimar-text focus:outline-none focus:border-cofimar-primary focus:ring-1 focus:ring-cofimar-primary/30 transition-all duration-200"
+                      className="w-full bg-cofimar-bg/50 border border-cofimar-border rounded-lg px-4 py-2.5 font-mono text-sm text-cofimar-text focus:outline-none focus:border-cofimar-primary focus:ring-1 focus:ring-cofimar-primary/30 transition-all duration-200"
                     />
                   </div>
 
@@ -803,7 +803,7 @@ const RegistroData: React.FC<RegistroDataProps> = ({ role }) => {
                     <select
                       value={pondForm.certification}
                       onChange={(e) => setPondForm({ ...pondForm, certification: e.target.value })}
-                      className="w-full bg-cofimar-bg/50 border border-cofimar-border rounded-lg px-4.5 py-2.5 font-mono text-sm text-cofimar-text focus:outline-none focus:border-cofimar-primary focus:ring-1 focus:ring-cofimar-primary/30 transition-all duration-200"
+                      className="w-full bg-cofimar-bg/50 border border-cofimar-border rounded-lg px-4 py-2.5 font-mono text-sm text-cofimar-text focus:outline-none focus:border-cofimar-primary focus:ring-1 focus:ring-cofimar-primary/30 transition-all duration-200"
                     >
                       <option value="ASC">ASC</option>
                       <option value="ASC-BAP">ASC-BAP</option>
@@ -822,7 +822,7 @@ const RegistroData: React.FC<RegistroDataProps> = ({ role }) => {
                       required
                       value={harvestForm.pond_code}
                       onChange={(e) => setHarvestForm({ ...harvestForm, pond_code: e.target.value })}
-                      className="w-full bg-cofimar-bg/50 border border-cofimar-border rounded-lg px-4.5 py-2.5 font-mono text-sm text-cofimar-text focus:outline-none focus:border-cofimar-primary focus:ring-1 focus:ring-cofimar-primary/30 transition-all duration-200"
+                      className="w-full bg-cofimar-bg/50 border border-cofimar-border rounded-lg px-4 py-2.5 font-mono text-sm text-cofimar-text focus:outline-none focus:border-cofimar-primary focus:ring-1 focus:ring-cofimar-primary/30 transition-all duration-200"
                     >
                       {allPondsCatalog.map((p) => (
                         <option key={p.code} value={p.code}>{p.code} ({p.sector || 'Sin sector'})</option>
@@ -835,7 +835,7 @@ const RegistroData: React.FC<RegistroDataProps> = ({ role }) => {
                     <select
                       value={harvestForm.activity}
                       onChange={(e) => setHarvestForm({ ...harvestForm, activity: e.target.value })}
-                      className="w-full bg-cofimar-bg/50 border border-cofimar-border rounded-lg px-4.5 py-2.5 font-mono text-sm text-cofimar-text focus:outline-none focus:border-cofimar-primary focus:ring-1 focus:ring-cofimar-primary/30 transition-all duration-200"
+                      className="w-full bg-cofimar-bg/50 border border-cofimar-border rounded-lg px-4 py-2.5 font-mono text-sm text-cofimar-text focus:outline-none focus:border-cofimar-primary focus:ring-1 focus:ring-cofimar-primary/30 transition-all duration-200"
                     >
                       <option value="PESCA">PESCA (Liquidación Final)</option>
                       <option value="RALEO">RALEO (Cosecha Intermedia)</option>
@@ -849,7 +849,7 @@ const RegistroData: React.FC<RegistroDataProps> = ({ role }) => {
                       required
                       value={harvestForm.harvest_date}
                       onChange={(e) => setHarvestForm({ ...harvestForm, harvest_date: e.target.value })}
-                      className="w-full bg-cofimar-bg/50 border border-cofimar-border rounded-lg px-4.5 py-2.5 font-mono text-sm text-cofimar-text focus:outline-none focus:border-cofimar-primary focus:ring-1 focus:ring-cofimar-primary/30 transition-all duration-200"
+                      className="w-full bg-cofimar-bg/50 border border-cofimar-border rounded-lg px-4 py-2.5 font-mono text-sm text-cofimar-text focus:outline-none focus:border-cofimar-primary focus:ring-1 focus:ring-cofimar-primary/30 transition-all duration-200"
                     />
                   </div>
 
@@ -859,7 +859,7 @@ const RegistroData: React.FC<RegistroDataProps> = ({ role }) => {
                       type="text"
                       value={harvestForm.sector_chief}
                       onChange={(e) => setHarvestForm({ ...harvestForm, sector_chief: e.target.value })}
-                      className="w-full bg-cofimar-bg/50 border border-cofimar-border rounded-lg px-4.5 py-2.5 font-mono text-sm text-cofimar-text focus:outline-none focus:border-cofimar-primary focus:ring-1 focus:ring-cofimar-primary/30 transition-all duration-200"
+                      className="w-full bg-cofimar-bg/50 border border-cofimar-border rounded-lg px-4 py-2.5 font-mono text-sm text-cofimar-text focus:outline-none focus:border-cofimar-primary focus:ring-1 focus:ring-cofimar-primary/30 transition-all duration-200"
                       placeholder="Ej: GUSTAVO CARRASCO"
                     />
                   </div>
@@ -871,7 +871,7 @@ const RegistroData: React.FC<RegistroDataProps> = ({ role }) => {
                       required
                       value={harvestForm.lbs_farm}
                       onChange={(e) => setHarvestForm({ ...harvestForm, lbs_farm: parseFloat(e.target.value) })}
-                      className="w-full bg-cofimar-bg/50 border border-cofimar-border rounded-lg px-4.5 py-2.5 font-mono text-sm text-cofimar-text focus:outline-none focus:border-cofimar-primary focus:ring-1 focus:ring-cofimar-primary/30 transition-all duration-200"
+                      className="w-full bg-cofimar-bg/50 border border-cofimar-border rounded-lg px-4 py-2.5 font-mono text-sm text-cofimar-text focus:outline-none focus:border-cofimar-primary focus:ring-1 focus:ring-cofimar-primary/30 transition-all duration-200"
                     />
                   </div>
 
@@ -882,7 +882,7 @@ const RegistroData: React.FC<RegistroDataProps> = ({ role }) => {
                       required
                       value={harvestForm.lbs_plant}
                       onChange={(e) => setHarvestForm({ ...harvestForm, lbs_plant: parseFloat(e.target.value) })}
-                      className="w-full bg-cofimar-bg/50 border border-cofimar-border rounded-lg px-4.5 py-2.5 font-mono text-sm text-cofimar-text focus:outline-none focus:border-cofimar-primary focus:ring-1 focus:ring-cofimar-primary/30 transition-all duration-200"
+                      className="w-full bg-cofimar-bg/50 border border-cofimar-border rounded-lg px-4 py-2.5 font-mono text-sm text-cofimar-text focus:outline-none focus:border-cofimar-primary focus:ring-1 focus:ring-cofimar-primary/30 transition-all duration-200"
                     />
                   </div>
 
@@ -894,7 +894,7 @@ const RegistroData: React.FC<RegistroDataProps> = ({ role }) => {
                       required
                       value={harvestForm.gr_farm}
                       onChange={(e) => setHarvestForm({ ...harvestForm, gr_farm: parseFloat(e.target.value) })}
-                      className="w-full bg-cofimar-bg/50 border border-cofimar-border rounded-lg px-4.5 py-2.5 font-mono text-sm text-cofimar-text focus:outline-none focus:border-cofimar-primary focus:ring-1 focus:ring-cofimar-primary/30 transition-all duration-200"
+                      className="w-full bg-cofimar-bg/50 border border-cofimar-border rounded-lg px-4 py-2.5 font-mono text-sm text-cofimar-text focus:outline-none focus:border-cofimar-primary focus:ring-1 focus:ring-cofimar-primary/30 transition-all duration-200"
                     />
                   </div>
 
@@ -906,7 +906,7 @@ const RegistroData: React.FC<RegistroDataProps> = ({ role }) => {
                       required
                       value={harvestForm.gr_plant}
                       onChange={(e) => setHarvestForm({ ...harvestForm, gr_plant: parseFloat(e.target.value) })}
-                      className="w-full bg-cofimar-bg/50 border border-cofimar-border rounded-lg px-4.5 py-2.5 font-mono text-sm text-cofimar-text focus:outline-none focus:border-cofimar-primary focus:ring-1 focus:ring-cofimar-primary/30 transition-all duration-200"
+                      className="w-full bg-cofimar-bg/50 border border-cofimar-border rounded-lg px-4 py-2.5 font-mono text-sm text-cofimar-text focus:outline-none focus:border-cofimar-primary focus:ring-1 focus:ring-cofimar-primary/30 transition-all duration-200"
                     />
                   </div>
 
@@ -915,7 +915,7 @@ const RegistroData: React.FC<RegistroDataProps> = ({ role }) => {
                     <select
                       value={harvestForm.certification}
                       onChange={(e) => setHarvestForm({ ...harvestForm, certification: e.target.value })}
-                      className="w-full bg-cofimar-bg/50 border border-cofimar-border rounded-lg px-4.5 py-2.5 font-mono text-sm text-cofimar-text focus:outline-none focus:border-cofimar-primary focus:ring-1 focus:ring-cofimar-primary/30 transition-all duration-200"
+                      className="w-full bg-cofimar-bg/50 border border-cofimar-border rounded-lg px-4 py-2.5 font-mono text-sm text-cofimar-text focus:outline-none focus:border-cofimar-primary focus:ring-1 focus:ring-cofimar-primary/30 transition-all duration-200"
                     >
                       <option value="ASC">ASC</option>
                       <option value="ASC-BAP">ASC-BAP</option>
@@ -934,7 +934,7 @@ const RegistroData: React.FC<RegistroDataProps> = ({ role }) => {
                       required
                       value={seedingForm.pond_code}
                       onChange={(e) => setSeedingForm({ ...seedingForm, pond_code: e.target.value })}
-                      className="w-full bg-cofimar-bg/50 border border-cofimar-border rounded-lg px-4.5 py-2.5 font-mono text-sm text-cofimar-text focus:outline-none focus:border-cofimar-primary focus:ring-1 focus:ring-cofimar-primary/30 transition-all duration-200"
+                      className="w-full bg-cofimar-bg/50 border border-cofimar-border rounded-lg px-4 py-2.5 font-mono text-sm text-cofimar-text focus:outline-none focus:border-cofimar-primary focus:ring-1 focus:ring-cofimar-primary/30 transition-all duration-200"
                     >
                       {allPondsCatalog.map((p) => (
                         <option key={p.code} value={p.code}>{p.code}</option>
@@ -947,7 +947,7 @@ const RegistroData: React.FC<RegistroDataProps> = ({ role }) => {
                     <select
                       value={seedingForm.aguaje}
                       onChange={(e) => setSeedingForm({ ...seedingForm, aguaje: e.target.value })}
-                      className="w-full bg-cofimar-bg/50 border border-cofimar-border rounded-lg px-4.5 py-2.5 font-mono text-sm text-cofimar-text focus:outline-none focus:border-cofimar-primary focus:ring-1 focus:ring-cofimar-primary/30 transition-all duration-200"
+                      className="w-full bg-cofimar-bg/50 border border-cofimar-border rounded-lg px-4 py-2.5 font-mono text-sm text-cofimar-text focus:outline-none focus:border-cofimar-primary focus:ring-1 focus:ring-cofimar-primary/30 transition-all duration-200"
                     >
                       <option value="AGUAJE 1">AGUAJE 1</option>
                       <option value="AGUAJE 2">AGUAJE 2</option>
@@ -963,7 +963,7 @@ const RegistroData: React.FC<RegistroDataProps> = ({ role }) => {
                       required
                       value={seedingForm.seeding_date}
                       onChange={(e) => setSeedingForm({ ...seedingForm, seeding_date: e.target.value })}
-                      className="w-full bg-cofimar-bg/50 border border-cofimar-border rounded-lg px-4.5 py-2.5 font-mono text-sm text-cofimar-text focus:outline-none focus:border-cofimar-primary focus:ring-1 focus:ring-cofimar-primary/30 transition-all duration-200"
+                      className="w-full bg-cofimar-bg/50 border border-cofimar-border rounded-lg px-4 py-2.5 font-mono text-sm text-cofimar-text focus:outline-none focus:border-cofimar-primary focus:ring-1 focus:ring-cofimar-primary/30 transition-all duration-200"
                     />
                   </div>
 
@@ -973,7 +973,7 @@ const RegistroData: React.FC<RegistroDataProps> = ({ role }) => {
                       type="date"
                       value={seedingForm.transfer_date}
                       onChange={(e) => setSeedingForm({ ...seedingForm, transfer_date: e.target.value })}
-                      className="w-full bg-cofimar-bg/50 border border-cofimar-border rounded-lg px-4.5 py-2.5 font-mono text-sm text-cofimar-text focus:outline-none focus:border-cofimar-primary focus:ring-1 focus:ring-cofimar-primary/30 transition-all duration-200"
+                      className="w-full bg-cofimar-bg/50 border border-cofimar-border rounded-lg px-4 py-2.5 font-mono text-sm text-cofimar-text focus:outline-none focus:border-cofimar-primary focus:ring-1 focus:ring-cofimar-primary/30 transition-all duration-200"
                     />
                   </div>
 
@@ -984,7 +984,7 @@ const RegistroData: React.FC<RegistroDataProps> = ({ role }) => {
                       required
                       value={seedingForm.animals}
                       onChange={(e) => setSeedingForm({ ...seedingForm, animals: parseInt(e.target.value) })}
-                      className="w-full bg-cofimar-bg/50 border border-cofimar-border rounded-lg px-4.5 py-2.5 font-mono text-sm text-cofimar-text focus:outline-none focus:border-cofimar-primary focus:ring-1 focus:ring-cofimar-primary/30 transition-all duration-200"
+                      className="w-full bg-cofimar-bg/50 border border-cofimar-border rounded-lg px-4 py-2.5 font-mono text-sm text-cofimar-text focus:outline-none focus:border-cofimar-primary focus:ring-1 focus:ring-cofimar-primary/30 transition-all duration-200"
                     />
                   </div>
 
@@ -994,7 +994,7 @@ const RegistroData: React.FC<RegistroDataProps> = ({ role }) => {
                       type="text"
                       value={seedingForm.laboratory}
                       onChange={(e) => setSeedingForm({ ...seedingForm, laboratory: e.target.value.toUpperCase() })}
-                      className="w-full bg-cofimar-bg/50 border border-cofimar-border rounded-lg px-4.5 py-2.5 font-mono text-sm text-cofimar-text focus:outline-none focus:border-cofimar-primary focus:ring-1 focus:ring-cofimar-primary/30 transition-all duration-200"
+                      className="w-full bg-cofimar-bg/50 border border-cofimar-border rounded-lg px-4 py-2.5 font-mono text-sm text-cofimar-text focus:outline-none focus:border-cofimar-primary focus:ring-1 focus:ring-cofimar-primary/30 transition-all duration-200"
                       placeholder="Ej: LAB COFIMAR"
                     />
                   </div>
@@ -1005,7 +1005,7 @@ const RegistroData: React.FC<RegistroDataProps> = ({ role }) => {
                       type="text"
                       value={seedingForm.nauplio}
                       onChange={(e) => setSeedingForm({ ...seedingForm, nauplio: e.target.value.toUpperCase() })}
-                      className="w-full bg-cofimar-bg/50 border border-cofimar-border rounded-lg px-4.5 py-2.5 font-mono text-sm text-cofimar-text focus:outline-none focus:border-cofimar-primary focus:ring-1 focus:ring-cofimar-primary/30 transition-all duration-200"
+                      className="w-full bg-cofimar-bg/50 border border-cofimar-border rounded-lg px-4 py-2.5 font-mono text-sm text-cofimar-text focus:outline-none focus:border-cofimar-primary focus:ring-1 focus:ring-cofimar-primary/30 transition-all duration-200"
                       placeholder="Ej: CEPA WILD"
                     />
                   </div>
@@ -1017,7 +1017,7 @@ const RegistroData: React.FC<RegistroDataProps> = ({ role }) => {
                       step="0.01"
                       value={seedingForm.survival_pct}
                       onChange={(e) => setSeedingForm({ ...seedingForm, survival_pct: parseFloat(e.target.value) })}
-                      className="w-full bg-cofimar-bg/50 border border-cofimar-border rounded-lg px-4.5 py-2.5 font-mono text-sm text-cofimar-text focus:outline-none focus:border-cofimar-primary focus:ring-1 focus:ring-cofimar-primary/30 transition-all duration-200"
+                      className="w-full bg-cofimar-bg/50 border border-cofimar-border rounded-lg px-4 py-2.5 font-mono text-sm text-cofimar-text focus:outline-none focus:border-cofimar-primary focus:ring-1 focus:ring-cofimar-primary/30 transition-all duration-200"
                     />
                   </div>
 
@@ -1026,7 +1026,7 @@ const RegistroData: React.FC<RegistroDataProps> = ({ role }) => {
                     <select
                       value={seedingForm.ablation}
                       onChange={(e) => setSeedingForm({ ...seedingForm, ablation: e.target.value })}
-                      className="w-full bg-cofimar-bg/50 border border-cofimar-border rounded-lg px-4.5 py-2.5 font-mono text-sm text-cofimar-text focus:outline-none focus:border-cofimar-primary focus:ring-1 focus:ring-cofimar-primary/30 transition-all duration-200"
+                      className="w-full bg-cofimar-bg/50 border border-cofimar-border rounded-lg px-4 py-2.5 font-mono text-sm text-cofimar-text focus:outline-none focus:border-cofimar-primary focus:ring-1 focus:ring-cofimar-primary/30 transition-all duration-200"
                     >
                       <option value="SÍ">SÍ (Ablada)</option>
                       <option value="NO">NO (Sin ablar)</option>
@@ -1041,7 +1041,7 @@ const RegistroData: React.FC<RegistroDataProps> = ({ role }) => {
                       required
                       value={seedingForm.weight_gr}
                       onChange={(e) => setSeedingForm({ ...seedingForm, weight_gr: parseFloat(e.target.value) })}
-                      className="w-full bg-cofimar-bg/50 border border-cofimar-border rounded-lg px-4.5 py-2.5 font-mono text-sm text-cofimar-text focus:outline-none focus:border-cofimar-primary focus:ring-1 focus:ring-cofimar-primary/30 transition-all duration-200"
+                      className="w-full bg-cofimar-bg/50 border border-cofimar-border rounded-lg px-4 py-2.5 font-mono text-sm text-cofimar-text focus:outline-none focus:border-cofimar-primary focus:ring-1 focus:ring-cofimar-primary/30 transition-all duration-200"
                     />
                   </div>
                 </div>
@@ -1060,7 +1060,7 @@ const RegistroData: React.FC<RegistroDataProps> = ({ role }) => {
                           required
                           value={cycleForm.pond_code}
                           onChange={(e) => handleCyclePondChange(e.target.value)}
-                          className="w-full bg-cofimar-bg/50 border border-cofimar-border rounded-lg px-4.5 py-2.5 font-mono text-sm text-cofimar-text focus:outline-none focus:border-cofimar-primary focus:ring-1 focus:ring-cofimar-primary/30 transition-all duration-200"
+                          className="w-full bg-cofimar-bg/50 border border-cofimar-border rounded-lg px-4 py-2.5 font-mono text-sm text-cofimar-text focus:outline-none focus:border-cofimar-primary focus:ring-1 focus:ring-cofimar-primary/30 transition-all duration-200"
                         >
                           {allPondsCatalog.map((p) => (
                             <option key={p.code} value={p.code}>{p.code}</option>
@@ -1072,7 +1072,7 @@ const RegistroData: React.FC<RegistroDataProps> = ({ role }) => {
                         <select
                           value={cycleForm.aguaje}
                           onChange={(e) => setCycleForm({ ...cycleForm, aguaje: e.target.value })}
-                          className="w-full bg-cofimar-bg/50 border border-cofimar-border rounded-lg px-4.5 py-2.5 font-mono text-sm text-cofimar-text focus:outline-none focus:border-cofimar-primary focus:ring-1 focus:ring-cofimar-primary/30 transition-all duration-200"
+                          className="w-full bg-cofimar-bg/50 border border-cofimar-border rounded-lg px-4 py-2.5 font-mono text-sm text-cofimar-text focus:outline-none focus:border-cofimar-primary focus:ring-1 focus:ring-cofimar-primary/30 transition-all duration-200"
                         >
                           <option value="AGUAJE 1">AGUAJE 1</option>
                           <option value="AGUAJE 2">AGUAJE 2</option>
@@ -1109,7 +1109,7 @@ const RegistroData: React.FC<RegistroDataProps> = ({ role }) => {
                             }
                             setCycleForm({ ...cycleForm, harvest_date: dateStr });
                           }}
-                          className="w-full bg-cofimar-bg/50 border border-cofimar-border rounded-lg px-4.5 py-2.5 font-mono text-sm text-cofimar-text focus:outline-none focus:border-cofimar-primary focus:ring-1 focus:ring-cofimar-primary/30 transition-all duration-200"
+                          className="w-full bg-cofimar-bg/50 border border-cofimar-border rounded-lg px-4 py-2.5 font-mono text-sm text-cofimar-text focus:outline-none focus:border-cofimar-primary focus:ring-1 focus:ring-cofimar-primary/30 transition-all duration-200"
                         />
                       </div>
                       <div className="space-y-1.5">
@@ -1149,7 +1149,7 @@ const RegistroData: React.FC<RegistroDataProps> = ({ role }) => {
                           type="text"
                           value={cycleForm.sector_chief}
                           onChange={(e) => setCycleForm({ ...cycleForm, sector_chief: e.target.value })}
-                          className="w-full bg-cofimar-bg/50 border border-cofimar-border rounded-lg px-4.5 py-2.5 font-mono text-sm text-cofimar-text focus:outline-none focus:border-cofimar-primary focus:ring-1 focus:ring-cofimar-primary/30 transition-all duration-200"
+                          className="w-full bg-cofimar-bg/50 border border-cofimar-border rounded-lg px-4 py-2.5 font-mono text-sm text-cofimar-text focus:outline-none focus:border-cofimar-primary focus:ring-1 focus:ring-cofimar-primary/30 transition-all duration-200"
                           placeholder="Ej: GUSTAVO CARRASCO"
                         />
                       </div>
@@ -1208,7 +1208,7 @@ const RegistroData: React.FC<RegistroDataProps> = ({ role }) => {
                           type="date"
                           value={cycleForm.seeding_date}
                           onChange={(e) => setCycleForm({ ...cycleForm, seeding_date: e.target.value })}
-                          className="w-full bg-cofimar-bg/50 border border-cofimar-border rounded-lg px-4.5 py-2.5 font-mono text-sm text-cofimar-text focus:outline-none focus:border-cofimar-primary focus:ring-1 focus:ring-cofimar-primary/30 transition-all duration-200"
+                          className="w-full bg-cofimar-bg/50 border border-cofimar-border rounded-lg px-4 py-2.5 font-mono text-sm text-cofimar-text focus:outline-none focus:border-cofimar-primary focus:ring-1 focus:ring-cofimar-primary/30 transition-all duration-200"
                         />
                       </div>
                       <div className="space-y-1.5">
@@ -1217,7 +1217,7 @@ const RegistroData: React.FC<RegistroDataProps> = ({ role }) => {
                           type="number"
                           value={cycleForm.animals_seeded}
                           onChange={(e) => setCycleForm({ ...cycleForm, animals_seeded: parseInt(e.target.value) })}
-                          className="w-full bg-cofimar-bg/50 border border-cofimar-border rounded-lg px-4.5 py-2.5 font-mono text-sm text-cofimar-text focus:outline-none focus:border-cofimar-primary focus:ring-1 focus:ring-cofimar-primary/30 transition-all duration-200"
+                          className="w-full bg-cofimar-bg/50 border border-cofimar-border rounded-lg px-4 py-2.5 font-mono text-sm text-cofimar-text focus:outline-none focus:border-cofimar-primary focus:ring-1 focus:ring-cofimar-primary/30 transition-all duration-200"
                         />
                       </div>
                       <div className="space-y-1.5">
@@ -1379,7 +1379,7 @@ const RegistroData: React.FC<RegistroDataProps> = ({ role }) => {
                           required
                           value={cycleForm.feed_lbs}
                           onChange={(e) => setCycleForm({ ...cycleForm, feed_lbs: parseFloat(e.target.value) })}
-                          className="w-full bg-cofimar-bg/50 border border-cofimar-primary/40 rounded-lg px-4.5 py-2.5 font-mono text-sm text-cofimar-text focus:outline-none focus:border-cofimar-primary focus:ring-1 focus:ring-cofimar-primary/30 transition-all duration-200 font-bold"
+                          className="w-full bg-cofimar-bg/50 border border-cofimar-primary/40 rounded-lg px-4 py-2.5 font-mono text-sm text-cofimar-text focus:outline-none focus:border-cofimar-primary focus:ring-1 focus:ring-cofimar-primary/30 transition-all duration-200 font-bold"
                           placeholder="Ej: 95000"
                         />
                       </div>
@@ -1388,7 +1388,7 @@ const RegistroData: React.FC<RegistroDataProps> = ({ role }) => {
                         <select
                           value={cycleForm.feed_supplier}
                           onChange={(e) => setCycleForm({ ...cycleForm, feed_supplier: e.target.value })}
-                          className="w-full bg-cofimar-bg/50 border border-cofimar-border rounded-lg px-4.5 py-2.5 font-mono text-sm text-cofimar-text focus:outline-none focus:border-cofimar-primary focus:ring-1 focus:ring-cofimar-primary/30 transition-all duration-200"
+                          className="w-full bg-cofimar-bg/50 border border-cofimar-border rounded-lg px-4 py-2.5 font-mono text-sm text-cofimar-text focus:outline-none focus:border-cofimar-primary focus:ring-1 focus:ring-cofimar-primary/30 transition-all duration-200"
                         >
                           <option value="">PROVEEDOR...</option>
                           <option value="SK">SK (Skretting)</option>
@@ -1403,7 +1403,7 @@ const RegistroData: React.FC<RegistroDataProps> = ({ role }) => {
                         <select
                           value={cycleForm.feeding_mode}
                           onChange={(e) => setCycleForm({ ...cycleForm, feeding_mode: e.target.value })}
-                          className="w-full bg-cofimar-bg/50 border border-cofimar-border rounded-lg px-4.5 py-2.5 font-mono text-sm text-cofimar-text focus:outline-none focus:border-cofimar-primary focus:ring-1 focus:ring-cofimar-primary/30 transition-all duration-200"
+                          className="w-full bg-cofimar-bg/50 border border-cofimar-border rounded-lg px-4 py-2.5 font-mono text-sm text-cofimar-text focus:outline-none focus:border-cofimar-primary focus:ring-1 focus:ring-cofimar-primary/30 transition-all duration-200"
                         >
                           <option value="AUTOMATICA">AUTOMÁTICA</option>
                           <option value="BOLEO">BOLEO (Manual)</option>

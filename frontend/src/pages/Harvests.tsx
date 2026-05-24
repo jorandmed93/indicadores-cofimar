@@ -391,7 +391,7 @@ const Harvests: React.FC = () => {
 
                     {/* Gramaje (QC) */}
                     <div className="border border-cofimar-border rounded-xl overflow-hidden shadow-sm bg-cofimar-bg/10">
-                      <div className="bg-cofimar-surface-secondary px-4.5 py-2.5 border-b border-cofimar-border">
+                      <div className="bg-cofimar-surface-secondary px-4 py-2.5 border-b border-cofimar-border">
                         <span className="text-[10px] font-mono text-cofimar-text-muted uppercase font-bold tracking-wider">Muestreos de Gramaje (QC)</span>
                       </div>
                       <div className="p-5 space-y-3">
