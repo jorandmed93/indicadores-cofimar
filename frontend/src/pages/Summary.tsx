@@ -14,6 +14,11 @@ const Summary: React.FC = () => {
   const [aguajesData, setAguajesData] = useState<any[]>([]);
   const [monthsData, setMonthsData] = useState<any[]>([]);
 
+  // State for drill-down cycles breakdown
+  const [selectedGroup, setSelectedGroup] = useState<{ type: 'sector' | 'aguaje' | 'month'; name: string; params: any } | null>(null);
+  const [groupCycles, setGroupCycles] = useState<any[]>([]);
+  const [loadingCycles, setLoadingCycles] = useState(false);
+
   useEffect(() => {
     setLoading(true);
     const fetchSectors = client.get('/summary/by-sector');
@@ -32,6 +37,22 @@ const Summary: React.FC = () => {
         setLoading(false);
       });
   }, []);
+
+  const handleRowClick = (type: 'sector' | 'aguaje' | 'month', name: string, filterParams: any) => {
+    setSelectedGroup({ type, name, params: filterParams });
+    setLoadingCycles(true);
+    setGroupCycles([]);
+    
+    client.get('/cycles', { params: { ...filterParams, limit: 100 } })
+      .then(res => {
+        setGroupCycles(res.data.data);
+        setLoadingCycles(false);
+      })
+      .catch(err => {
+        console.error(err);
+        setLoadingCycles(false);
+      });
+  };
 
   const subTabs = [
     { id: 'sector', label: 'Resumen por Sector', icon: BarChart3 },
@@ -62,7 +83,11 @@ const Summary: React.FC = () => {
     return null;
   };
 
-  const renderTable = (data: any[], columns: { key: string; label: string; align?: string; format?: (v: any, row?: any) => string; bold?: boolean; color?: string }[]) => (
+  const renderTable = (
+    data: any[], 
+    columns: { key: string; label: string; align?: string; format?: (v: any, row?: any) => string; bold?: boolean; color?: string }[],
+    onRowClick?: (row: any) => void
+  ) => (
     <div className="overflow-x-auto">
       <table className="w-full text-left text-sm whitespace-nowrap">
         <thead className="bg-cofimar-surface-secondary text-cofimar-text-muted font-mono text-xs uppercase tracking-wider border-b border-cofimar-border">
@@ -76,7 +101,11 @@ const Summary: React.FC = () => {
         </thead>
         <tbody className="divide-y divide-cofimar-border font-mono">
           {data.map((row, idx) => (
-            <tr key={idx} className="hover:bg-cofimar-surface-secondary transition">
+            <tr 
+              key={idx} 
+              onClick={() => onRowClick && onRowClick(row)}
+              className={`hover:bg-cofimar-surface-hover/30 transition border-b border-cofimar-border ${onRowClick ? 'cursor-pointer hover:text-cofimar-primary' : ''}`}
+            >
               {columns.map((col, i) => {
                 const val = col.format ? col.format(row[col.key], row) : row[col.key];
                 return (
@@ -101,7 +130,7 @@ const Summary: React.FC = () => {
           Resúmenes Consolidados (Pivots)
         </h1>
         <p className="text-cofimar-text-muted text-sm mt-1">
-          Análisis de datos agrupados por Sector, Aguaje y Meses.
+          Análisis de datos agrupados por Sector, Aguaje y Meses. <span className="text-cofimar-primary font-bold font-mono text-xs ml-2">💡 Haz clic en una fila para ver el detalle de sus ciclos</span>
         </p>
       </div>
 
@@ -146,7 +175,7 @@ const Summary: React.FC = () => {
                   { key: 'avg_survival', label: 'SOBREVIVENCIA %', align: 'right', format: (v: any) => `${parseFloat(v).toFixed(1)}%` },
                   { key: 'avg_fca', label: 'FCA', align: 'right', format: (v: any) => parseFloat(v).toFixed(2) },
                   { key: 'avg_lbs_ha', label: 'LBS/HA', align: 'right', bold: true, color: 'primary', format: (v: any) => Math.round(parseFloat(v)).toLocaleString() },
-                ])}
+                ], (row) => handleRowClick('sector', row.sector, { sector: row.sector }))}
               </div>
               <div className="glass-card p-6 rounded-lg shadow-sm flex flex-col justify-between">
                 <h3 className="text-base font-bold text-cofimar-text mb-4">Análisis de Rendimiento LBS/HA por Sector</h3>
@@ -176,7 +205,7 @@ const Summary: React.FC = () => {
                   { key: 'avg_survival', label: 'SOBREVIVENCIA %', align: 'right', format: (v: any) => `${parseFloat(v).toFixed(1)}%` },
                   { key: 'avg_fca', label: 'FCA', align: 'right', format: (v: any) => parseFloat(v).toFixed(2) },
                   { key: 'avg_lbs_ha', label: 'LBS/HA', align: 'right', bold: true, color: 'accent', format: (v: any) => Math.round(parseFloat(v)).toLocaleString() },
-                ])}
+                ], (row) => handleRowClick('aguaje', row.aguaje, { aguaje: row.aguaje }))}
               </div>
               <div className="glass-card p-6 rounded-lg shadow-sm flex flex-col justify-between">
                 <h3 className="text-base font-bold text-cofimar-text mb-4">Análisis de Rendimiento LBS/HA por Aguaje</h3>
@@ -206,7 +235,7 @@ const Summary: React.FC = () => {
                   { key: 'avg_survival', label: 'SOBREVIVENCIA %', align: 'right', format: (v: any) => `${parseFloat(v).toFixed(1)}%` },
                   { key: 'avg_fca', label: 'FCA', align: 'right', format: (v: any) => parseFloat(v).toFixed(2) },
                   { key: 'avg_lbs_ha', label: 'LBS/HA', align: 'right', bold: true, color: 'primary', format: (v: any) => Math.round(parseFloat(v)).toLocaleString() },
-                ])}
+                ], (row) => handleRowClick('month', `${row.year} / ${row.month}`, { year: row.year, month: row.month }))}
               </div>
               <div className="glass-card p-6 rounded-lg shadow-sm flex flex-col justify-between">
                 <h3 className="text-base font-bold text-cofimar-text mb-4">Evolución Histórica Mensual LBS/HA</h3>
@@ -224,6 +253,91 @@ const Summary: React.FC = () => {
               </div>
             </div>
           )}
+        </div>
+      )}
+
+      {/* Drill-down Cycles Modal */}
+      {selectedGroup && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          {/* Blur backdrop */}
+          <div 
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            onClick={() => setSelectedGroup(null)}
+          />
+          
+          {/* Modal content */}
+          <div className="relative bg-cofimar-surface border border-cofimar-border w-full max-w-5xl rounded-2xl shadow-2xl flex flex-col max-h-[85vh] overflow-hidden transition-all duration-300 transform scale-100">
+            {/* Header */}
+            <div className="p-6 border-b border-cofimar-border flex items-center justify-between bg-cofimar-surface-secondary">
+              <div>
+                <span className="text-[10px] font-mono text-cofimar-primary uppercase tracking-widest font-bold">
+                  Desglose de Ciclos Productivos
+                </span>
+                <h2 className="text-xl font-bold text-cofimar-text mt-1">
+                  {selectedGroup.type === 'sector' ? 'Sector' : selectedGroup.type === 'aguaje' ? 'Aguaje' : 'Período'}: <span className="text-cofimar-primary">{selectedGroup.name}</span>
+                </h2>
+              </div>
+              <button 
+                onClick={() => setSelectedGroup(null)}
+                className="bg-cofimar-bg/60 hover:bg-cofimar-bg border border-cofimar-border text-cofimar-text hover:text-cofimar-primary px-4.5 py-2.5 rounded-xl text-xs font-mono font-bold transition-all shadow-sm"
+              >
+                CERRAR
+              </button>
+            </div>
+            
+            {/* Body */}
+            <div className="p-6 overflow-y-auto flex-1">
+              {loadingCycles ? (
+                <div className="h-[250px] flex flex-col items-center justify-center space-y-4">
+                  <Loader2 className="w-8 h-8 text-cofimar-primary animate-spin" />
+                  <span className="text-cofimar-text-muted font-mono text-xs">Obteniendo ciclos productivos...</span>
+                </div>
+              ) : groupCycles.length === 0 ? (
+                <div className="h-[250px] flex flex-col items-center justify-center space-y-2">
+                  <span className="text-cofimar-text-muted font-mono text-sm">No se encontraron ciclos para este grupo.</span>
+                </div>
+              ) : (
+                <div className="overflow-x-auto border border-cofimar-border rounded-xl shadow-inner bg-cofimar-bg/10">
+                  <table className="w-full text-left text-xs whitespace-nowrap">
+                    <thead className="bg-cofimar-surface-secondary text-cofimar-text-muted font-mono uppercase border-b border-cofimar-border">
+                      <tr>
+                        <th className="py-3 px-4 rounded-l-lg">CÓDIGO</th>
+                        <th className="py-3 px-4">PISCINA</th>
+                        <th className="py-3 px-4">SECTOR</th>
+                        <th className="py-3 px-4">FECHA COSECHA</th>
+                        <th className="py-3 px-4 text-right">DÍAS</th>
+                        <th className="py-3 px-4 text-right">LARVAS SEMBRADAS</th>
+                        <th className="py-3 px-4 text-right">SOBREVIVENCIA</th>
+                        <th className="py-3 px-4 text-right">FCA</th>
+                        <th className="py-3 px-4 text-right rounded-r-lg">LBS/HA</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-cofimar-border font-mono">
+                      {groupCycles.map((c, idx) => (
+                        <tr key={idx} className="hover:bg-cofimar-surface-secondary/60 transition">
+                          <td className="py-3.5 px-4 font-bold text-cofimar-primary">{c.pond_code}</td>
+                          <td className="py-3.5 px-4 text-cofimar-text-secondary">{c.pond_name}</td>
+                          <td className="py-3.5 px-4 text-cofimar-text-muted">{c.sector}</td>
+                          <td className="py-3.5 px-4 text-cofimar-text-muted">{c.harvest_date}</td>
+                          <td className="py-3.5 px-4 text-right text-cofimar-text">{c.days} d</td>
+                          <td className="py-3.5 px-4 text-right text-cofimar-text">{parseInt(c.animals_seeded || 0).toLocaleString()}</td>
+                          <td className={`py-3.5 px-4 text-right font-bold ${
+                            c.survival_pct >= 70 ? 'text-cofimar-success' : c.survival_pct >= 50 ? 'text-cofimar-warning' : 'text-cofimar-danger'
+                          }`}>
+                            {parseFloat(c.survival_pct).toFixed(1)}%
+                          </td>
+                          <td className="py-3.5 px-4 text-right text-cofimar-text">{parseFloat(c.fca).toFixed(2)}</td>
+                          <td className="py-3.5 px-4 text-right font-bold text-cofimar-primary">
+                            {Math.round(parseFloat(c.lbs_ha)).toLocaleString()}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       )}
     </div>
