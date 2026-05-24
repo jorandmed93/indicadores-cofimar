@@ -6,6 +6,21 @@ from .routers import cycles, summary, harvests, catalog, import_api, ponds, seed
 # Create database tables automatically
 Base.metadata.create_all(bind=engine)
 
+# Auto-seed if database is empty
+from .database import SessionLocal
+from .models import Pond
+from .seed import main as seed_main
+
+db = SessionLocal()
+try:
+    if db.query(Pond).count() == 0:
+        print("La base de datos esta vacia en produccion. Iniciando auto-sembrado...")
+        seed_main()
+except Exception as e:
+    print(f"Error al verificar/sembrar base de datos: {e}")
+finally:
+    db.close()
+
 app = FastAPI(
     title="Sistema de Indicadores Acuícolas 2026",
     description="Backend API to manage, inspect, and aggregate shrimp aquaculture cycles, seedings, and harvests",
