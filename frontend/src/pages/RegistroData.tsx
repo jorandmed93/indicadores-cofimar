@@ -5,11 +5,11 @@ import {
   CheckCircle2, AlertTriangle, ChevronRight, RefreshCw, HelpCircle
 } from 'lucide-react';
 
-interface CrudProps {
+interface RegistroDataProps {
   role: 'admin' | 'viewer';
 }
 
-const Crud: React.FC<CrudProps> = ({ role }) => {
+const RegistroData: React.FC<RegistroDataProps> = ({ role }) => {
   const [activeTab, setActiveTab] = useState<'ponds' | 'harvests' | 'seedings' | 'cycles'>('ponds');
   
   // Data lists
@@ -1363,4 +1363,4 @@ const Crud: React.FC<CrudProps> = ({ role }) => {
   );
 };
 
-export default Crud;
+export default RegistroData;

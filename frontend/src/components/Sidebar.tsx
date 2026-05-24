@@ -52,7 +52,7 @@ const Sidebar: React.FC<SidebarProps> = ({
     {
       title: 'ADMINISTRACIÓN',
       items: [
-        { id: 'crud', label: 'Formularios CRUD', icon: Settings },
+        { id: 'crud', label: 'Registro Data', icon: Settings },
         { id: 'import', label: 'Cargar Datos', icon: FileSpreadsheet },
       ]
     }
