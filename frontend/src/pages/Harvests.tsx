@@ -266,45 +266,45 @@ const Harvests: React.FC = () => {
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             {/* Blur Backdrop */}
             <div 
-              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+              className="absolute inset-0 bg-black/70 backdrop-blur-md transition-opacity duration-300"
               onClick={() => setSelectedHarvest(null)}
             />
             
             {/* Modal Box */}
-            <div className="relative bg-cofimar-surface border border-cofimar-border w-full max-w-3xl rounded-2xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden transition-all transform scale-100">
+            <div className="relative bg-cofimar-surface border border-cofimar-border w-full max-w-4xl rounded-2xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden transition-all duration-300 transform scale-100 animate-in fade-in zoom-in-95">
               {/* Modal Header */}
               <div className="p-6 border-b border-cofimar-border flex items-center justify-between bg-cofimar-surface-secondary">
-                <div className="flex items-center space-x-3.5">
-                  <div className="w-10 h-10 bg-cofimar-primary/10 rounded-xl flex items-center justify-center border border-cofimar-primary/20">
-                    <Droplet className="w-5 h-5 text-cofimar-primary" />
+                <div className="flex items-center space-x-4">
+                  <div className="w-12 h-12 bg-cofimar-primary/10 rounded-xl flex items-center justify-center border border-cofimar-primary/20">
+                    <Droplet className="w-6 h-6 text-cofimar-primary" />
                   </div>
                   <div>
                     <span className="text-[10px] font-mono text-cofimar-primary uppercase tracking-widest font-bold">
                       Control de Calidad (QC) & Pesca
                     </span>
                     <h2 className="text-xl font-bold text-cofimar-text mt-0.5">
-                      Piscina: <span className="text-cofimar-primary">{selectedHarvest.pond_code}</span> ({selectedHarvest.pond_name || 'Sin Nombre'})
+                      Piscina: <span className="text-cofimar-primary">{selectedHarvest.pond_code}</span> {selectedHarvest.pond_name ? `(${selectedHarvest.pond_name})` : ''}
                     </h2>
                   </div>
                 </div>
                 <button 
                   onClick={() => setSelectedHarvest(null)}
-                  className="bg-cofimar-bg/60 hover:bg-cofimar-bg border border-cofimar-border text-cofimar-text hover:text-cofimar-primary px-4 py-2 rounded-xl text-xs font-mono font-bold transition-all"
+                  className="bg-cofimar-bg hover:bg-cofimar-surface border border-cofimar-border text-cofimar-text hover:text-cofimar-primary px-5 py-2.5 rounded-xl text-xs font-mono font-bold transition-all shadow-sm"
                 >
                   CERRAR
                 </button>
               </div>
               
               {/* Modal Body */}
-              <div className="p-6 overflow-y-auto flex-1 space-y-6">
+              <div className="p-8 overflow-y-auto flex-1 space-y-6">
                 
                 {/* Visual Status Indicator Banner */}
-                <div className={`p-4.5 rounded-xl border flex items-center justify-between ${
+                <div className={`p-5 rounded-xl border flex items-center justify-between shadow-sm ${
                   selectedHarvest.activity === 'PESCA' 
                     ? 'bg-cofimar-success/5 border-cofimar-success/20 text-cofimar-success' 
                     : 'bg-cofimar-warning/5 border-cofimar-warning/20 text-cofimar-warning'
                 }`}>
-                  <div className="flex items-center space-x-3">
+                  <div className="flex items-center space-x-3.5">
                     <CheckCircle className="w-5 h-5" />
                     <div>
                       <span className="text-xs font-mono uppercase font-bold tracking-wider">Actividad Registrada</span>
@@ -313,97 +313,97 @@ const Harvests: React.FC = () => {
                       </p>
                     </div>
                   </div>
-                  <span className="font-mono text-xs font-bold border px-2.5 py-1 rounded bg-black/10 border-current">
-                    FECHA: {selectedHarvest.harvest_date}
+                  <span className="font-mono text-xs font-bold border px-3 py-1.5 rounded bg-black/10 border-current shadow-sm">
+                    FECHA DE REGISTRO: {selectedHarvest.harvest_date}
                   </span>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   {/* Left Column: Admin & Location Details */}
-                  <div className="space-y-4.5">
-                    <h3 className="text-xs font-bold text-cofimar-text uppercase tracking-wider font-mono flex items-center gap-2 border-b border-cofimar-border pb-2">
-                      <User className="w-3.5 h-3.5 text-cofimar-text-muted" />
+                  <div className="space-y-6">
+                    <h3 className="text-xs font-bold text-cofimar-text uppercase tracking-wider font-mono flex items-center gap-2 border-b border-cofimar-border pb-2.5">
+                      <User className="w-4 h-4 text-cofimar-text-muted" />
                       Información Administrativa
                     </h3>
                     
                     <div className="grid grid-cols-2 gap-4">
-                      <div className="bg-cofimar-bg/30 border border-cofimar-border/60 p-3 rounded-lg">
-                        <span className="text-[10px] font-mono text-cofimar-text-muted uppercase">Sector</span>
-                        <p className="text-xs font-bold text-cofimar-text mt-1">{selectedHarvest.sector || 'N/A'}</p>
+                      <div className="bg-cofimar-bg/20 border border-cofimar-border/60 p-4.5 rounded-xl shadow-sm">
+                        <span className="text-[10px] font-mono text-cofimar-text-muted uppercase tracking-wider block">Sector</span>
+                        <p className="text-xs font-bold text-cofimar-text mt-1.5">{selectedHarvest.sector || 'N/A'}</p>
                       </div>
-                      <div className="bg-cofimar-bg/30 border border-cofimar-border/60 p-3 rounded-lg">
-                        <span className="text-[10px] font-mono text-cofimar-text-muted uppercase">Jefe de Sector</span>
-                        <p className="text-xs font-bold text-cofimar-text mt-1">{selectedHarvest.sector_chief || 'N/A'}</p>
+                      <div className="bg-cofimar-bg/20 border border-cofimar-border/60 p-4.5 rounded-xl shadow-sm">
+                        <span className="text-[10px] font-mono text-cofimar-text-muted uppercase tracking-wider block">Jefe de Sector</span>
+                        <p className="text-xs font-bold text-cofimar-text mt-1.5">{selectedHarvest.sector_chief || 'N/A'}</p>
                       </div>
-                      <div className="bg-cofimar-bg/30 border border-cofimar-border/60 p-3 rounded-lg">
-                        <span className="text-[10px] font-mono text-cofimar-text-muted uppercase">Período</span>
-                        <p className="text-xs font-bold text-cofimar-text mt-1 font-mono">{selectedHarvest.month} / {selectedHarvest.year}</p>
+                      <div className="bg-cofimar-bg/20 border border-cofimar-border/60 p-4.5 rounded-xl shadow-sm">
+                        <span className="text-[10px] font-mono text-cofimar-text-muted uppercase tracking-wider block">Mes / Período</span>
+                        <p className="text-xs font-bold text-cofimar-text mt-1.5 font-mono">{selectedHarvest.month || 'N/A'}</p>
                       </div>
-                      <div className="bg-cofimar-bg/30 border border-cofimar-border/60 p-3 rounded-lg">
-                        <span className="text-[10px] font-mono text-cofimar-text-muted uppercase">Certificación</span>
-                        <p className="text-xs font-bold text-cofimar-text mt-1">{selectedHarvest.certification || 'SIN CERTIFICACIÓN'}</p>
+                      <div className="bg-cofimar-bg/20 border border-cofimar-border/60 p-4.5 rounded-xl shadow-sm">
+                        <span className="text-[10px] font-mono text-cofimar-text-muted uppercase tracking-wider block">Certificación</span>
+                        <p className="text-xs font-bold text-cofimar-text mt-1.5">{selectedHarvest.certification || 'SIN CERTIFICACIÓN'}</p>
                       </div>
                     </div>
 
-                    <div className="bg-cofimar-bg/30 border border-cofimar-border/60 p-3.5 rounded-lg flex items-center justify-between">
-                      <div className="flex items-center space-x-2">
+                    <div className="bg-cofimar-bg/20 border border-cofimar-border/60 p-4 rounded-xl flex items-center justify-between shadow-sm">
+                      <div className="flex items-center space-x-2.5">
                         <Calendar className="w-4 h-4 text-cofimar-primary" />
-                        <span className="text-xs text-cofimar-text-secondary">Fecha de Transacción</span>
+                        <span className="text-xs text-cofimar-text-secondary">Fecha de Cosecha</span>
                       </div>
                       <span className="text-xs font-bold font-mono text-cofimar-text">{selectedHarvest.harvest_date}</span>
                     </div>
                   </div>
 
                   {/* Right Column: Weight & QC Metrics */}
-                  <div className="space-y-4.5">
-                    <h3 className="text-xs font-bold text-cofimar-text uppercase tracking-wider font-mono flex items-center gap-2 border-b border-cofimar-border pb-2">
-                      <Scale className="w-3.5 h-3.5 text-cofimar-text-muted" />
+                  <div className="space-y-6">
+                    <h3 className="text-xs font-bold text-cofimar-text uppercase tracking-wider font-mono flex items-center gap-2 border-b border-cofimar-border pb-2.5">
+                      <Scale className="w-4 h-4 text-cofimar-text-muted" />
                       Balances de Báscula (Planta vs Campo)
                     </h3>
 
                     {/* Weight (Lbs) Grid */}
-                    <div className="grid grid-cols-2 gap-3.5">
-                      <div className="bg-cofimar-bg/30 border border-cofimar-border/60 p-3 rounded-lg text-right">
-                        <span className="text-[10px] font-mono text-cofimar-text-muted uppercase block text-left">Lbs Camaronera</span>
-                        <span className="text-base font-bold text-cofimar-text font-mono mt-1 block">{Math.round(selectedHarvest.lbs_farm || 0).toLocaleString()} lbs</span>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="bg-cofimar-bg/20 border border-cofimar-border/60 p-4 rounded-xl text-right shadow-sm">
+                        <span className="text-[10px] font-mono text-cofimar-text-muted uppercase block text-left tracking-wider">Lbs Camaronera</span>
+                        <span className="text-base font-bold text-cofimar-text font-mono mt-1.5 block">{Math.round(selectedHarvest.lbs_farm || 0).toLocaleString()} lbs</span>
                       </div>
-                      <div className="bg-cofimar-bg/30 border border-cofimar-border/60 p-3 rounded-lg text-right">
-                        <span className="text-[10px] font-mono text-cofimar-text-muted uppercase block text-left">Lbs Planta (Real)</span>
-                        <span className="text-base font-bold text-cofimar-text font-mono mt-1 block">{Math.round(selectedHarvest.lbs_plant || 0).toLocaleString()} lbs</span>
+                      <div className="bg-cofimar-bg/20 border border-cofimar-border/60 p-4 rounded-xl text-right shadow-sm">
+                        <span className="text-[10px] font-mono text-cofimar-text-muted uppercase block text-left tracking-wider">Lbs Planta (Real)</span>
+                        <span className="text-base font-bold text-cofimar-text font-mono mt-1.5 block">{Math.round(selectedHarvest.lbs_plant || 0).toLocaleString()} lbs</span>
                       </div>
                     </div>
 
                     {/* Weight Loss (Merma) Alert Card */}
-                    <div className={`p-3.5 rounded-xl border flex items-center justify-between ${
+                    <div className={`p-4 rounded-xl border flex items-center justify-between shadow-sm ${
                       Math.abs(diffLbs) > 1000 
                         ? 'bg-cofimar-danger/10 border-cofimar-danger/20 text-cofimar-danger' 
                         : 'bg-cofimar-accent/10 border-cofimar-accent/20 text-cofimar-accent'
                     }`}>
                       <div>
-                        <span className="text-[10px] font-mono uppercase block font-bold">Merma Registrada (Diferencia)</span>
-                        <span className="text-lg font-bold font-mono block mt-0.5">{Math.round(diffLbs).toLocaleString()} lbs</span>
+                        <span className="text-[10px] font-mono uppercase block font-bold tracking-wider">Merma Registrada (Diferencia)</span>
+                        <span className="text-lg font-bold font-mono block mt-1">{Math.round(diffLbs).toLocaleString()} lbs</span>
                       </div>
                       <div className="text-right">
-                        <span className="text-[10px] font-mono uppercase block font-bold">Variación %</span>
-                        <span className="text-lg font-bold font-mono block mt-0.5">{diffLbs > 0 ? '+' : ''}{pctMerma.toFixed(2)}%</span>
+                        <span className="text-[10px] font-mono uppercase block font-bold tracking-wider">Variación %</span>
+                        <span className="text-lg font-bold font-mono block mt-1">{diffLbs > 0 ? '+' : ''}{pctMerma.toFixed(2)}%</span>
                       </div>
                     </div>
 
                     {/* Gramaje (QC) */}
-                    <div className="border border-cofimar-border rounded-xl overflow-hidden">
-                      <div className="bg-cofimar-surface-secondary px-4 py-2 border-b border-cofimar-border">
-                        <span className="text-[10px] font-mono text-cofimar-text-muted uppercase font-bold">Muestreos de Gramaje (QC)</span>
+                    <div className="border border-cofimar-border rounded-xl overflow-hidden shadow-sm bg-cofimar-bg/10">
+                      <div className="bg-cofimar-surface-secondary px-4.5 py-2.5 border-b border-cofimar-border">
+                        <span className="text-[10px] font-mono text-cofimar-text-muted uppercase font-bold tracking-wider">Muestreos de Gramaje (QC)</span>
                       </div>
-                      <div className="p-3.5 space-y-2.5">
+                      <div className="p-4.5 space-y-3">
                         <div className="flex justify-between text-xs">
-                          <span className="text-cofimar-text-muted">Gramaje Camaronera:</span>
+                          <span className="text-cofimar-text-secondary">Gramaje Camaronera:</span>
                           <span className="font-mono text-cofimar-text font-bold">{parseFloat(selectedHarvest.gr_farm || 0).toFixed(2)} gr</span>
                         </div>
                         <div className="flex justify-between text-xs">
-                          <span className="text-cofimar-text-muted">Gramaje Planta:</span>
+                          <span className="text-cofimar-text-secondary">Gramaje Planta:</span>
                           <span className="font-mono text-cofimar-text font-bold">{parseFloat(selectedHarvest.gr_plant || 0).toFixed(2)} gr</span>
                         </div>
-                        <div className="border-t border-cofimar-border/60 pt-2.5 flex justify-between text-xs">
+                        <div className="border-t border-cofimar-border pt-3 flex justify-between text-xs">
                           <span className="text-cofimar-text font-bold">Diferencia de Gramos:</span>
                           <span className={`font-mono font-bold ${Math.abs(diffGr) > 0.5 ? 'text-cofimar-danger' : 'text-cofimar-accent'}`}>
                             {diffGr > 0 ? '+' : ''}{diffGr.toFixed(2)} gr
@@ -416,9 +416,9 @@ const Harvests: React.FC = () => {
 
                 {/* Extra Stats Indicator */}
                 {selectedHarvest.animals && (
-                  <div className="bg-cofimar-primary/5 border border-cofimar-primary/20 p-4 rounded-xl flex items-center justify-between">
-                    <div className="flex items-center space-x-2.5">
-                      <Award className="w-4.5 h-4.5 text-cofimar-primary" />
+                  <div className="bg-cofimar-primary/5 border border-cofimar-primary/20 p-4.5 rounded-xl flex items-center justify-between shadow-sm">
+                    <div className="flex items-center space-x-3">
+                      <Award className="w-5 h-5 text-cofimar-primary" />
                       <span className="text-xs text-cofimar-text font-bold">Volumen Estimado de Animales Cosechados</span>
                     </div>
                     <span className="font-mono text-sm font-bold text-cofimar-primary">
