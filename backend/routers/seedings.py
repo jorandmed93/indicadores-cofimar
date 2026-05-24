@@ -8,16 +8,18 @@ from ..schemas import Seeding as SeedingSchema, SeedingCreate
 
 router = APIRouter(prefix="/seedings", tags=["Seedings"])
 
+from sqlalchemy import desc
+
 @router.get("", response_model=List[SeedingSchema])
 def get_seedings(
     db: Session = Depends(get_db),
     pond_code: Optional[str] = Query(None),
-    limit: int = Query(50, ge=1, le=100)
+    limit: int = Query(100, ge=1, le=1000)
 ):
     query = db.query(Seeding)
     if pond_code:
         query = query.filter(Seeding.pond_code == pond_code)
-    return query.limit(limit).all()
+    return query.order_by(desc(Seeding.seeding_date)).limit(limit).all()
 
 @router.post("", response_model=SeedingSchema)
 def create_seeding(seeding_in: SeedingCreate, db: Session = Depends(get_db)):
