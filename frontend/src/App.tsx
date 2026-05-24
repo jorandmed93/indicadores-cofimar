@@ -253,7 +253,7 @@ function App() {
       case 'crud':
         return <RegistroData role={role} />;
       case 'pondDetail':
-        return <PondDetail pondCode={selectedPondCode} />;
+        return <PondDetail pondCode={selectedPondCode} onClose={() => { setActiveTab('dashboard'); setSelectedPondCode(''); }} />;
       default:
         return (
           <Dashboard 

@@ -8,9 +8,10 @@ import {
 
 interface PondDetailProps {
   pondCode: string;
+  onClose?: () => void;
 }
 
-const PondDetail: React.FC<PondDetailProps> = ({ pondCode }) => {
+const PondDetail: React.FC<PondDetailProps> = ({ pondCode, onClose }) => {
   const [loading, setLoading] = useState(true);
   const [pondStats, setPondStats] = useState<any>(null);
   const [pondCycles, setPondCycles] = useState<any[]>([]);
@@ -77,14 +78,25 @@ const PondDetail: React.FC<PondDetailProps> = ({ pondCode }) => {
   return (
     <div className="p-8 space-y-7">
       {/* Title */}
-      <div>
-        <h1 className="text-3xl font-display font-bold text-cofimar-text flex items-center gap-3">
-          <Compass className="w-8 h-8 text-cofimar-accent" />
-          Historial de Piscina: <span className="text-cofimar-accent">{pondCode}</span>
-        </h1>
-        <p className="text-cofimar-text-muted text-sm mt-1">
-          Evolución del rendimiento, FCA, sobrevivencia y control de calidad a lo largo de los ciclos de producción.
-        </p>
+      <div className="flex items-center justify-between border-b border-cofimar-border/60 pb-6">
+        <div>
+          <h1 className="text-3xl font-display font-bold text-cofimar-text flex items-center gap-3">
+            <Compass className="w-8 h-8 text-cofimar-accent animate-pulse" />
+            Historial de Piscina: <span className="text-cofimar-accent">{pondCode}</span>
+          </h1>
+          <p className="text-cofimar-text-muted text-sm mt-1">
+            Evolución del rendimiento, FCA, sobrevivencia y control de calidad a lo largo de los ciclos de producción.
+          </p>
+        </div>
+        {onClose && (
+          <button 
+            onClick={onClose}
+            className="flex items-center gap-2 bg-cofimar-surface hover:bg-cofimar-surface-hover border border-cofimar-border text-cofimar-text hover:text-cofimar-accent px-5 py-2.5 rounded-xl text-xs font-mono font-bold transition-all shadow-sm group"
+          >
+            <span className="text-sm group-hover:scale-110 transition-transform">✕</span>
+            CERRAR E IR A DASHBOARD
+          </button>
+        )}
       </div>
 
       {loading ? (
