@@ -25,10 +25,18 @@ const Dashboard: React.FC<DashboardProps> = ({ setActiveTab, setSelectedPondCode
   ];
 
   // Selected Filters
-  const [selectedYear, setSelectedYear] = useState<string>('2026');
+  const [selectedYear, setSelectedYear] = useState<string>(() => {
+    return new Date().getFullYear().toString();
+  });
   const [selectedSector, setSelectedSector] = useState<string>('');
   const [selectedAguaje, setSelectedAguaje] = useState<string>('');
-  const [selectedMonth, setSelectedMonth] = useState<string>('');
+  const [selectedMonth, setSelectedMonth] = useState<string>(() => {
+    const monthsList = [
+      'ENERO', 'FEBRERO', 'MARZO', 'ABRIL', 'MAYO', 'JUNIO',
+      'JULIO', 'AGOSTO', 'SEPTIEMBRE', 'OCTUBRE', 'NOVIEMBRE', 'DICIEMBRE'
+    ];
+    return monthsList[new Date().getMonth()];
+  });
   const [selectedCert, setSelectedCert] = useState<string>('');
 
   // Dashboard Data State
@@ -106,10 +114,16 @@ const Dashboard: React.FC<DashboardProps> = ({ setActiveTab, setSelectedPondCode
   }, [selectedYear, selectedSector, selectedAguaje, selectedMonth, selectedCert]);
 
   const handleResetFilters = () => {
-    setSelectedYear('2026');
+    const monthsList = [
+      'ENERO', 'FEBRERO', 'MARZO', 'ABRIL', 'MAYO', 'JUNIO',
+      'JULIO', 'AGOSTO', 'SEPTIEMBRE', 'OCTUBRE', 'NOVIEMBRE', 'DICIEMBRE'
+    ];
+    const currentMonth = monthsList[new Date().getMonth()];
+    
+    setSelectedYear(new Date().getFullYear().toString());
     setSelectedSector('');
     setSelectedAguaje('');
-    setSelectedMonth('');
+    setSelectedMonth(currentMonth);
     setSelectedCert('');
   };
 

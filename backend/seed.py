@@ -2,9 +2,9 @@ import os
 import sys
 
 # Ensure the root directory of the workspace is in sys.path
-root_dir = "c:\\Jamg-Proyectos\\indicadores-cofimar"
-if root_dir not in sys.path:
-    sys.path.append(root_dir)
+base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if base_dir not in sys.path:
+    sys.path.append(base_dir)
 
 from backend.database import SessionLocal, Base, engine
 from backend.services.importer import import_excel_file
@@ -14,7 +14,8 @@ def main():
     Base.metadata.create_all(bind=engine)
     
     # Path to the Excel file
-    excel_path = "c:\\Jamg-Proyectos\\indicadores-cofimar\\BASE INDICADORES 2026.xlsm"
+    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    excel_path = os.path.join(base_dir, "BASE INDICADORES 2026.xlsm")
     
     if not os.path.exists(excel_path):
         print(f"Error: No se encontro el archivo de Excel en: {excel_path}")
