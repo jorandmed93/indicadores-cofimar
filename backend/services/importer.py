@@ -200,6 +200,27 @@ def import_excel_file(file_path: str, db: Session):
             if not harvest_date or not pond_code:
                 continue
                 
+            # Safely extract evaluated grammage values from Excel
+            gr_harvest_farm = clean_num(row.get('GRAMAJE CAMARONERA'))
+            gr_harvest_plant = clean_num(row.get('GRAMOS PLANTA'))
+            
+            # Excel SUMIFS Formula Bug Correction:
+            # If a pond has both a RALEO and a PESCA on the same day, the Excel formula
+            # '=SUMIFS(COSECHAS!F:F, ...)' will sum the grammages (e.g. 36 + 36 = 72).
+            # We query the database's `harvests` table for a PESCA event on that day
+            # to retrieve the true individual event weight.
+            pesca_event = db.query(Harvest).filter(
+                Harvest.pond_code == pond_code,
+                Harvest.harvest_date == harvest_date,
+                Harvest.activity == "PESCA"
+            ).first()
+            
+            if pesca_event:
+                if pesca_event.gr_farm > 0 and pesca_event.gr_farm != gr_harvest_farm:
+                    gr_harvest_farm = pesca_event.gr_farm
+                if pesca_event.gr_plant > 0 and pesca_event.gr_plant != gr_harvest_plant:
+                    gr_harvest_plant = pesca_event.gr_plant
+            
             cycle = Cycle(
                 id=clean_int(row.get('ID')),
                 harvest_date=harvest_date,
@@ -229,8 +250,8 @@ def import_excel_file(file_path: str, db: Session):
                 # Liquidación
                 lbs_harvest_farm=clean_num(row.get('LIBRAS CAMARONERA')),
                 lbs_harvest_plant=clean_num(row.get('LIBRAS PLANTA')),
-                gr_harvest_farm=clean_num(row.get('GRAMAJE CAMARONERA')),
-                gr_harvest_plant=clean_num(row.get('GRAMOS PLANTA')),
+                gr_harvest_farm=gr_harvest_farm,
+                gr_harvest_plant=gr_harvest_plant,
                 lbs_ha_harvest=clean_num(row.get('LBS/HA COSECHA')),
                 animals_harvest=clean_num(row.get('CAM COSECHADOS')),
                 

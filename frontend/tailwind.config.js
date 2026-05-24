@@ -1,5 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 export default {
+  darkMode: 'class',
   content: [
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
@@ -8,15 +9,33 @@ export default {
     extend: {
       colors: {
         cofimar: {
-          bg: "#0A1628",       // Deep navy
-          surface: "#0F2240",  // Slate blue surface
-          primary: "#00C9A7",  // Teal primary
-          accent: "#F5A623",   // Amber accent
-          text: "#E8F0FE",     // Ice white text
-          success: "#22C55E",  // Success green
-          warning: "#F59E0B",  // Warning yellow
-          danger: "#EF4444",   // Danger red
-          border: "#1E293B"    // Slate border
+          bg: "var(--cofimar-bg)",
+          surface: {
+            DEFAULT: "var(--cofimar-surface)",
+            secondary: "var(--cofimar-surface-secondary)",
+            hover: "var(--cofimar-surface-hover)",
+            active: "var(--cofimar-surface-active)",
+            "active-text": "var(--cofimar-surface-active-text)",
+          },
+          primary: "var(--cofimar-primary)",
+          accent: "var(--cofimar-accent)",
+          border: "var(--cofimar-border)",
+          text: {
+            DEFAULT: "var(--cofimar-text)",
+            secondary: "var(--cofimar-text-secondary)",
+            muted: "var(--cofimar-text-muted)",
+            faint: "var(--cofimar-text-faint)",
+          },
+          badge: {
+            bg: "var(--cofimar-badge-bg)",
+            text: "var(--cofimar-badge-text)",
+          },
+          panel: {
+            bg: "var(--cofimar-panel-bg)",
+          },
+          success: "#34C759",
+          warning: "#FF9500",
+          danger: "#FF3B30",
         }
       },
       fontFamily: {

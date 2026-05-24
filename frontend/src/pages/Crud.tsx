@@ -5,13 +5,18 @@ import {
   CheckCircle2, AlertTriangle, ChevronRight, RefreshCw, HelpCircle
 } from 'lucide-react';
 
-const Crud: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'ponds' | 'harvests' | 'seedings'>('ponds');
+interface CrudProps {
+  role: 'admin' | 'viewer';
+}
+
+const Crud: React.FC<CrudProps> = ({ role }) => {
+  const [activeTab, setActiveTab] = useState<'ponds' | 'harvests' | 'seedings' | 'cycles'>('ponds');
   
   // Data lists
   const [ponds, setPonds] = useState<any[]>([]);
   const [harvests, setHarvests] = useState<any[]>([]);
   const [seedings, setSeedings] = useState<any[]>([]);
+  const [cycles, setCycles] = useState<any[]>([]);
   
   // Catalogs
   const [loading, setLoading] = useState(false);
@@ -57,6 +62,57 @@ const Crud: React.FC = () => {
     weight_gr: 0.05
   });
 
+  const [cycleForm, setCycleForm] = useState({
+    harvest_date: new Date().toISOString().split('T')[0],
+    year: new Date().getFullYear(),
+    aguaje: 'AGUAJE 1',
+    month: '',
+    pond_code: '',
+    pond_name: '',
+    sector: '',
+    hectares: 0,
+    certification: 'ASC',
+    days: 0,
+    seeding_date: '',
+    pre: '',
+    seeding_weight: 0,
+    dry_days: 0,
+    animals_seeded: 0,
+    laboratory: '',
+    nauplio: '',
+    lbs_trawl_farm: 0,
+    lbs_trawl_plant: 0,
+    gr_trawl_farm: 0,
+    gr_trawl_plant: 0,
+    lbs_harvest_farm: 0,
+    lbs_harvest_plant: 0,
+    gr_harvest_farm: 0,
+    gr_harvest_plant: 0,
+    feed_lbs: 0,
+    feed_supplier: '',
+    feeding_mode: 'AUTOMATICA',
+    sector_chief: ''
+  });
+
+  const handleCyclePondChange = (code: string) => {
+    const selectedPond = allPondsCatalog.find(p => p.code === code);
+    if (selectedPond) {
+      setCycleForm({
+        ...cycleForm,
+        pond_code: code,
+        hectares: parseFloat(selectedPond.hectares || 0),
+        sector: selectedPond.sector || '',
+        certification: selectedPond.certification || 'ASC',
+        pond_name: selectedPond.code.split(' ')[1] || ''
+      });
+    } else {
+      setCycleForm({
+        ...cycleForm,
+        pond_code: code
+      });
+    }
+  };
+
   // Fetch functions
   const fetchData = async () => {
     setLoading(true);
@@ -71,6 +127,9 @@ const Crud: React.FC = () => {
       } else if (activeTab === 'seedings') {
         const res = await client.get('/seedings');
         setSeedings(res.data);
+      } else if (activeTab === 'cycles') {
+        const res = await client.get('/cycles', { params: { limit: 100 } });
+        setCycles(res.data.data || []);
       }
     } catch (err: any) {
       console.error(err);
@@ -135,6 +194,37 @@ const Crud: React.FC = () => {
       pre_criadero: '',
       weight_gr: 0.05
     });
+    setCycleForm({
+      harvest_date: new Date().toISOString().split('T')[0],
+      year: new Date().getFullYear(),
+      aguaje: 'AGUAJE 1',
+      month: '',
+      pond_code: allPondsCatalog[0]?.code || '',
+      pond_name: '',
+      sector: '',
+      hectares: 0,
+      certification: 'ASC',
+      days: 0,
+      seeding_date: '',
+      pre: '',
+      seeding_weight: 0,
+      dry_days: 0,
+      animals_seeded: 0,
+      laboratory: '',
+      nauplio: '',
+      lbs_trawl_farm: 0,
+      lbs_trawl_plant: 0,
+      gr_trawl_farm: 0,
+      gr_trawl_plant: 0,
+      lbs_harvest_farm: 0,
+      lbs_harvest_plant: 0,
+      gr_harvest_farm: 0,
+      gr_harvest_plant: 0,
+      feed_lbs: 0,
+      feed_supplier: '',
+      feeding_mode: 'AUTOMATICA',
+      sector_chief: ''
+    });
     
     setIsModalOpen(true);
   };
@@ -179,6 +269,39 @@ const Crud: React.FC = () => {
         pre_criadero: item.pre_criadero || '',
         weight_gr: parseFloat(item.weight_gr || 0.05)
       });
+    } else if (activeTab === 'cycles') {
+      setSelectedId(item.id);
+      setCycleForm({
+        harvest_date: item.harvest_date || '',
+        year: parseInt(item.year || new Date().getFullYear()),
+        aguaje: item.aguaje || 'AGUAJE 1',
+        month: item.month || '',
+        pond_code: item.pond_code || '',
+        pond_name: item.pond_name || '',
+        sector: item.sector || '',
+        hectares: parseFloat(item.hectares || 0),
+        certification: item.certification || 'ASC',
+        days: parseInt(item.days || 0),
+        seeding_date: item.seeding_date || '',
+        pre: item.pre || '',
+        seeding_weight: parseFloat(item.seeding_weight || 0),
+        dry_days: parseInt(item.dry_days || 0),
+        animals_seeded: parseInt(item.animals_seeded || 0),
+        laboratory: item.laboratory || '',
+        nauplio: item.nauplio || '',
+        lbs_trawl_farm: parseFloat(item.lbs_trawl_farm || 0),
+        lbs_trawl_plant: parseFloat(item.lbs_trawl_plant || 0),
+        gr_trawl_farm: parseFloat(item.gr_trawl_farm || 0),
+        gr_trawl_plant: parseFloat(item.gr_trawl_plant || 0),
+        lbs_harvest_farm: parseFloat(item.lbs_harvest_farm || 0),
+        lbs_harvest_plant: parseFloat(item.lbs_harvest_plant || 0),
+        gr_harvest_farm: parseFloat(item.gr_harvest_farm || 0),
+        gr_harvest_plant: parseFloat(item.gr_harvest_plant || 0),
+        feed_lbs: parseFloat(item.feed_lbs || 0),
+        feed_supplier: item.feed_supplier || '',
+        feeding_mode: item.feeding_mode || 'AUTOMATICA',
+        sector_chief: item.sector_chief || ''
+      });
     }
     
     setIsModalOpen(true);
@@ -199,6 +322,9 @@ const Crud: React.FC = () => {
       } else if (activeTab === 'seedings') {
         await client.delete(`/seedings/${idOrCode}`);
         showToast('Siembra eliminada correctamente.');
+      } else if (activeTab === 'cycles') {
+        await client.delete(`/cycles/${idOrCode}`);
+        showToast('Ciclo productivo eliminado correctamente.');
       }
       fetchData();
       loadPondsCatalog();
@@ -240,6 +366,14 @@ const Crud: React.FC = () => {
           await client.post('/seedings', seedingForm);
           showToast('Siembra registrada correctamente.');
         }
+      } else if (activeTab === 'cycles') {
+        if (editMode) {
+          await client.put(`/cycles/${selectedId}`, cycleForm);
+          showToast('Ciclo productivo actualizado y KPIs recalculados.');
+        } else {
+          await client.post('/cycles', cycleForm);
+          showToast('Ciclo productivo registrado correctamente.');
+        }
       }
       
       setIsModalOpen(false);
@@ -254,33 +388,30 @@ const Crud: React.FC = () => {
   };
 
   return (
-    <div className="p-8 space-y-7 max-w-7xl">
-      {/* Title */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-display font-bold text-white flex items-center gap-3">
-            <Layers className="w-8 h-8 text-cofimar-primary" />
-            Formularios CRUD
-          </h1>
-          <p className="text-slate-400 text-sm mt-1">
-            Administra, añade, edita o elimina la información de Piscinas, Cosechas y Siembras directamente
-          </p>
-        </div>
-        
-        <button
-          onClick={handleOpenCreate}
-          className="flex items-center justify-center space-x-2 bg-cofimar-primary hover:bg-cofimar-primary/95 text-cofimar-bg font-bold px-5 py-3 rounded-xl transition duration-200 shadow-lg shadow-cofimar-primary/20 text-sm font-mono"
-        >
-          <Plus className="w-4 h-4" />
-          <span>AGREGAR NUEVO REGISTRO</span>
-        </button>
+    <div className="p-8 space-y-7 max-w-7xl pt-4">
+      {/* Action Header (GabarraControl Style) */}
+      <div className="flex justify-end">
+        {role === 'admin' ? (
+          <button
+            onClick={handleOpenCreate}
+            className="flex items-center justify-center space-x-2 bg-cofimar-surface-active hover:opacity-95 text-cofimar-surface-active-text font-semibold px-4.5 py-2.5 rounded-lg shadow-sm text-xs font-mono"
+          >
+            <Plus className="w-4 h-4" />
+            <span>AGREGAR NUEVO REGISTRO</span>
+          </button>
+        ) : (
+          <div className="bg-cofimar-accent/10 border border-cofimar-accent/20 text-cofimar-accent text-[10px] font-mono px-3.5 py-2 rounded-lg flex items-center gap-2 shadow-sm">
+            <AlertTriangle className="w-3.5 h-3.5 animate-pulse" />
+            <span>MODO SOLO LECTURA</span>
+          </div>
+        )}
       </div>
 
       {/* Toast Success Message */}
       {successMsg && (
         <div className="bg-cofimar-success/15 border border-cofimar-success/30 p-4.5 rounded-xl flex items-center gap-3.5 animate-fadeIn">
           <CheckCircle2 className="w-5.5 h-5.5 text-cofimar-success" />
-          <span className="text-sm font-medium text-white">{successMsg}</span>
+          <span className="text-sm font-medium text-cofimar-text">{successMsg}</span>
         </div>
       )}
 
@@ -291,7 +422,7 @@ const Crud: React.FC = () => {
           className={`flex items-center gap-2 px-6 py-3.5 border-b-2 font-mono text-sm font-bold transition duration-200 ${
             activeTab === 'ponds' 
               ? 'border-cofimar-primary text-cofimar-primary bg-cofimar-primary/5' 
-              : 'border-transparent text-slate-400 hover:text-white'
+              : 'border-transparent text-cofimar-text-muted hover:text-cofimar-text'
           }`}
         >
           <Anchor className="w-4 h-4" />
@@ -302,7 +433,7 @@ const Crud: React.FC = () => {
           className={`flex items-center gap-2 px-6 py-3.5 border-b-2 font-mono text-sm font-bold transition duration-200 ${
             activeTab === 'harvests' 
               ? 'border-cofimar-primary text-cofimar-primary bg-cofimar-primary/5' 
-              : 'border-transparent text-slate-400 hover:text-white'
+              : 'border-transparent text-cofimar-text-muted hover:text-cofimar-text'
           }`}
         >
           <Fish className="w-4 h-4" />
@@ -313,18 +444,29 @@ const Crud: React.FC = () => {
           className={`flex items-center gap-2 px-6 py-3.5 border-b-2 font-mono text-sm font-bold transition duration-200 ${
             activeTab === 'seedings' 
               ? 'border-cofimar-primary text-cofimar-primary bg-cofimar-primary/5' 
-              : 'border-transparent text-slate-400 hover:text-white'
+              : 'border-transparent text-cofimar-text-muted hover:text-cofimar-text'
           }`}
         >
           <Layers className="w-4 h-4" />
           <span>3. HISTORIAL SIEMBRAS</span>
+        </button>
+        <button
+          onClick={() => setActiveTab('cycles')}
+          className={`flex items-center gap-2 px-6 py-3.5 border-b-2 font-mono text-sm font-bold transition duration-200 ${
+            activeTab === 'cycles' 
+              ? 'border-cofimar-primary text-cofimar-primary bg-cofimar-primary/5' 
+              : 'border-transparent text-cofimar-text-muted hover:text-cofimar-text'
+          }`}
+        >
+          <Layers className="w-4 h-4" />
+          <span>4. CICLOS PRODUCTIVOS</span>
         </button>
       </div>
 
       {/* CRUD Tables Container */}
       <div className="glass-card rounded-2xl border border-cofimar-border/50 shadow-xl overflow-hidden">
         {loading && (
-          <div className="p-16 flex items-center justify-center space-x-3 text-slate-400 font-mono text-sm">
+          <div className="p-16 flex items-center justify-center space-x-3 text-cofimar-text-muted font-mono text-sm">
             <RefreshCw className="w-5 h-5 animate-spin text-cofimar-primary" />
             <span>Cargando registros...</span>
           </div>
@@ -334,47 +476,49 @@ const Crud: React.FC = () => {
           <div className="overflow-x-auto">
             {activeTab === 'ponds' && (
               <table className="w-full text-left border-collapse">
-                <thead className="bg-slate-800/40 text-slate-400 font-mono text-xs border-b border-cofimar-border/60">
+                <thead className="bg-cofimar-surface-secondary text-cofimar-text-muted font-mono text-xs border-b border-cofimar-border/60">
                   <tr>
                     <th className="py-4 px-6">CÓDIGO PISCINA</th>
                     <th className="py-4 px-6">SECTOR</th>
                     <th className="py-4 px-6 text-right">HECTÁREAS (HAS)</th>
                     <th className="py-4 px-6">CERTIFICACIÓN</th>
-                    <th className="py-4 px-6 text-center">ACCIONES</th>
+                    {role === 'admin' && <th className="py-4 px-6 text-center">ACCIONES</th>}
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-cofimar-border/25 font-mono text-sm">
                   {ponds.length === 0 ? (
                     <tr>
-                      <td colSpan={5} className="py-12 text-center text-slate-500">No hay piscinas registradas.</td>
+                      <td colSpan={role === 'admin' ? 5 : 4} className="py-12 text-center text-cofimar-text-muted">No hay piscinas registradas.</td>
                     </tr>
                   ) : (
                     ponds.map((p, idx) => (
-                      <tr key={idx} className="hover:bg-slate-800/10 transition">
+                      <tr key={idx} className="hover:bg-cofimar-surface-secondary transition">
                         <td className="py-3 px-6 font-bold text-cofimar-primary">{p.code}</td>
-                        <td className="py-3 px-6 text-white font-sans">{p.sector || 'N/A'}</td>
-                        <td className="py-3 px-6 text-right text-slate-300">{parseFloat(p.hectares || 0).toFixed(2)} ha</td>
+                        <td className="py-3 px-6 text-cofimar-text font-sans">{p.sector || 'N/A'}</td>
+                        <td className="py-3 px-6 text-right text-cofimar-text-muted">{parseFloat(p.hectares || 0).toFixed(2)} ha</td>
                         <td className="py-3 px-6">
-                          <span className="bg-slate-800 border border-slate-700 text-slate-300 text-[10px] px-2.5 py-0.5 rounded font-mono font-bold">
+                          <span className="bg-cofimar-bg border border-cofimar-border text-cofimar-text text-[10px] px-2.5 py-0.5 rounded font-mono font-bold">
                             {p.certification || 'CONVENCIONAL'}
                           </span>
                         </td>
-                        <td className="py-3 px-6 text-center space-x-2">
-                          <button
-                            onClick={() => handleOpenEdit(p)}
-                            className="bg-slate-800 hover:bg-slate-700 text-cofimar-primary p-1.5 rounded-lg border border-cofimar-primary/20 transition"
-                            title="Editar"
-                          >
-                            <Edit2 className="w-3.5 h-3.5" />
-                          </button>
-                          <button
-                            onClick={() => handleDelete(p.code)}
-                            className="bg-slate-800 hover:bg-cofimar-danger/20 text-cofimar-danger p-1.5 rounded-lg border border-cofimar-danger/20 transition"
-                            title="Eliminar"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
-                        </td>
+                        {role === 'admin' && (
+                          <td className="py-3 px-6 text-center space-x-2">
+                            <button
+                              onClick={() => handleOpenEdit(p)}
+                              className="bg-cofimar-surface-secondary hover:bg-cofimar-surface-hover text-cofimar-primary p-1.5 rounded-lg border border-cofimar-border transition"
+                              title="Editar"
+                            >
+                              <Edit2 className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                              onClick={() => handleDelete(p.code)}
+                              className="bg-cofimar-surface-secondary hover:bg-red-50 dark:hover:bg-red-950/20 text-cofimar-danger p-1.5 rounded-lg border border-cofimar-border transition"
+                              title="Eliminar"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </td>
+                        )}
                       </tr>
                     ))
                   )}
@@ -384,7 +528,7 @@ const Crud: React.FC = () => {
 
             {activeTab === 'harvests' && (
               <table className="w-full text-left border-collapse">
-                <thead className="bg-slate-800/40 text-slate-400 font-mono text-xs border-b border-cofimar-border/60">
+                <thead className="bg-cofimar-surface-secondary text-cofimar-text-muted font-mono text-xs border-b border-cofimar-border/60">
                   <tr>
                     <th className="py-4 px-5">PISCINA</th>
                     <th className="py-4 px-5">ACTIVIDAD</th>
@@ -394,17 +538,17 @@ const Crud: React.FC = () => {
                     <th className="py-4 px-5 text-right">GR CAM.</th>
                     <th className="py-4 px-5 text-right">GR PLANTA</th>
                     <th className="py-4 px-5">RESPONSABLE</th>
-                    <th className="py-4 px-5 text-center">ACCIONES</th>
+                    {role === 'admin' && <th className="py-4 px-5 text-center">ACCIONES</th>}
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-cofimar-border/25 font-mono text-xs">
                   {harvests.length === 0 ? (
                     <tr>
-                      <td colSpan={9} className="py-12 text-center text-slate-500">No hay transacciones registradas.</td>
+                      <td colSpan={role === 'admin' ? 9 : 8} className="py-12 text-center text-cofimar-text-muted">No hay transacciones registradas.</td>
                     </tr>
                   ) : (
                     harvests.map((h, idx) => (
-                      <tr key={idx} className="hover:bg-slate-800/10 transition">
+                      <tr key={idx} className="hover:bg-cofimar-surface-secondary transition">
                         <td className="py-3 px-5 font-bold text-cofimar-primary">{h.pond_code}</td>
                         <td className="py-3 px-5">
                           <span className={`px-2 py-0.5 rounded text-[9px] font-bold ${
@@ -413,26 +557,28 @@ const Crud: React.FC = () => {
                             {h.activity}
                           </span>
                         </td>
-                        <td className="py-3 px-5 text-slate-350">{h.harvest_date}</td>
-                        <td className="py-3 px-5 text-right text-slate-200">{Math.round(h.lbs_farm || 0).toLocaleString()}</td>
-                        <td className="py-3 px-5 text-right text-slate-200">{Math.round(h.lbs_plant || 0).toLocaleString()}</td>
-                        <td className="py-3 px-5 text-right text-slate-350">{parseFloat(h.gr_farm || 0).toFixed(2)}</td>
-                        <td className="py-3 px-5 text-right text-slate-350">{parseFloat(h.gr_plant || 0).toFixed(2)}</td>
-                        <td className="py-3 px-5 text-slate-400 font-sans">{h.sector_chief}</td>
-                        <td className="py-3 px-5 text-center space-x-2">
-                          <button
-                            onClick={() => handleOpenEdit(h)}
-                            className="bg-slate-800 hover:bg-slate-700 text-cofimar-primary p-1.5 rounded-lg border border-cofimar-primary/20 transition"
-                          >
-                            <Edit2 className="w-3.5 h-3.5" />
-                          </button>
-                          <button
-                            onClick={() => handleDelete(h.id)}
-                            className="bg-slate-800 hover:bg-cofimar-danger/20 text-cofimar-danger p-1.5 rounded-lg border border-cofimar-danger/20 transition"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
-                        </td>
+                        <td className="py-3 px-5 text-cofimar-text-muted font-mono">{h.harvest_date}</td>
+                        <td className="py-3 px-5 text-right text-cofimar-text font-mono">{Math.round(h.lbs_farm || 0).toLocaleString()}</td>
+                        <td className="py-3 px-5 text-right text-cofimar-text font-mono">{Math.round(h.lbs_plant || 0).toLocaleString()}</td>
+                        <td className="py-3 px-5 text-right text-cofimar-text-muted font-mono">{parseFloat(h.gr_farm || 0).toFixed(2)}</td>
+                        <td className="py-3 px-5 text-right text-cofimar-text-muted font-mono">{parseFloat(h.gr_plant || 0).toFixed(2)}</td>
+                        <td className="py-3 px-5 text-cofimar-text-muted font-sans">{h.sector_chief}</td>
+                        {role === 'admin' && (
+                          <td className="py-3 px-5 text-center space-x-2">
+                            <button
+                              onClick={() => handleOpenEdit(h)}
+                              className="bg-cofimar-surface-secondary hover:bg-cofimar-surface-hover text-cofimar-primary p-1.5 rounded-lg border border-cofimar-border transition"
+                            >
+                              <Edit2 className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                              onClick={() => handleDelete(h.id)}
+                              className="bg-cofimar-surface-secondary hover:bg-red-50 dark:hover:bg-red-950/20 text-cofimar-danger p-1.5 rounded-lg border border-cofimar-border transition"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </td>
+                        )}
                       </tr>
                     ))
                   )}
@@ -442,7 +588,7 @@ const Crud: React.FC = () => {
 
             {activeTab === 'seedings' && (
               <table className="w-full text-left border-collapse">
-                <thead className="bg-slate-800/40 text-slate-400 font-mono text-xs border-b border-cofimar-border/60">
+                <thead className="bg-cofimar-surface-secondary text-cofimar-text-muted font-mono text-xs border-b border-cofimar-border/60">
                   <tr>
                     <th className="py-4 px-5">PISCINA</th>
                     <th className="py-4 px-5">AGUAJE</th>
@@ -451,38 +597,104 @@ const Crud: React.FC = () => {
                     <th className="py-4 px-5">LABORATORIO</th>
                     <th className="py-4 px-5">NAUPLIO</th>
                     <th className="py-4 px-5 text-right">SOBREVIVENCIA (%)</th>
-                    <th className="py-4 px-5 text-center">ACCIONES</th>
+                    {role === 'admin' && <th className="py-4 px-5 text-center">ACCIONES</th>}
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-cofimar-border/25 font-mono text-xs">
                   {seedings.length === 0 ? (
                     <tr>
-                      <td colSpan={8} className="py-12 text-center text-slate-500">No hay siembras registradas.</td>
+                      <td colSpan={role === 'admin' ? 8 : 7} className="py-12 text-center text-cofimar-text-muted">No hay siembras registradas.</td>
                     </tr>
                   ) : (
                     seedings.map((s, idx) => (
-                      <tr key={idx} className="hover:bg-slate-800/10 transition">
+                      <tr key={idx} className="hover:bg-cofimar-surface-secondary transition">
                         <td className="py-3 px-5 font-bold text-cofimar-primary">{s.pond_code}</td>
-                        <td className="py-3 px-5 text-white">{s.aguaje}</td>
-                        <td className="py-3 px-5 text-slate-350">{s.seeding_date}</td>
-                        <td className="py-3 px-5 text-right text-slate-200">{(s.animals || 0).toLocaleString()}</td>
-                        <td className="py-3 px-5 text-slate-300 font-sans">{s.laboratory || 'N/A'}</td>
-                        <td className="py-3 px-5 text-slate-400 font-sans">{s.nauplio || 'N/A'}</td>
-                        <td className="py-3 px-5 text-right font-bold text-cofimar-accent">{parseFloat(s.survival_pct || 0).toFixed(2)}%</td>
-                        <td className="py-3 px-5 text-center space-x-2">
-                          <button
-                            onClick={() => handleOpenEdit(s)}
-                            className="bg-slate-800 hover:bg-slate-700 text-cofimar-primary p-1.5 rounded-lg border border-cofimar-primary/20 transition"
-                          >
-                            <Edit2 className="w-3.5 h-3.5" />
-                          </button>
-                          <button
-                            onClick={() => handleDelete(s.id)}
-                            className="bg-slate-800 hover:bg-cofimar-danger/20 text-cofimar-danger p-1.5 rounded-lg border border-cofimar-danger/20 transition"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
+                        <td className="py-3 px-5 text-cofimar-text">{s.aguaje}</td>
+                        <td className="py-3 px-5 text-cofimar-text-muted font-mono">{s.seeding_date}</td>
+                        <td className="py-3 px-5 text-right text-cofimar-text font-mono">{(s.animals || 0).toLocaleString()}</td>
+                        <td className="py-3 px-5 text-cofimar-text-muted font-sans">{s.laboratory || 'N/A'}</td>
+                        <td className="py-3 px-5 text-cofimar-text-muted font-sans">{s.nauplio || 'N/A'}</td>
+                        <td className="py-3 px-5 text-right font-bold text-cofimar-accent font-mono">{parseFloat(s.survival_pct || 0).toFixed(2)}%</td>
+                        {role === 'admin' && (
+                          <td className="py-3 px-5 text-center space-x-2">
+                            <button
+                              onClick={() => handleOpenEdit(s)}
+                              className="bg-cofimar-surface-secondary hover:bg-cofimar-surface-hover text-cofimar-primary p-1.5 rounded-lg border border-cofimar-border transition"
+                            >
+                              <Edit2 className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                              onClick={() => handleDelete(s.id)}
+                              className="bg-cofimar-surface-secondary hover:bg-red-50 dark:hover:bg-red-950/20 text-cofimar-danger p-1.5 rounded-lg border border-cofimar-border transition"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </td>
+                        )}
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            )}
+
+            {activeTab === 'cycles' && (
+              <table className="w-full text-left border-collapse">
+                <thead className="bg-cofimar-surface-secondary text-cofimar-text-muted font-mono text-xs border-b border-cofimar-border/60">
+                  <tr>
+                    <th className="py-4 px-5">PISCINA</th>
+                    <th className="py-4 px-5">AGUAJE</th>
+                    <th className="py-4 px-5">FECHA COSECHA</th>
+                    <th className="py-4 px-5 text-right">HAS</th>
+                    <th className="py-4 px-5 text-right">LBS TOTALES</th>
+                    <th className="py-4 px-5 text-right">LBS/HA</th>
+                    <th className="py-4 px-5 text-right">SOBREVIVENCIA</th>
+                    <th className="py-4 px-5 text-right">ALIMENTO (LBS)</th>
+                    <th className="py-4 px-5 text-right text-cofimar-primary">FCA</th>
+                    {role === 'admin' && <th className="py-4 px-5 text-center">ACCIONES</th>}
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-cofimar-border/25 font-mono text-xs">
+                  {cycles.length === 0 ? (
+                    <tr>
+                      <td colSpan={role === 'admin' ? 10 : 9} className="py-12 text-center text-cofimar-text-muted">No hay ciclos productivos registrados.</td>
+                    </tr>
+                  ) : (
+                    cycles.map((c, idx) => (
+                      <tr key={idx} className="hover:bg-cofimar-surface-secondary transition">
+                        <td className="py-3 px-5 font-bold text-cofimar-primary">{c.pond_code}</td>
+                        <td className="py-3 px-5 text-cofimar-text">{c.aguaje}</td>
+                        <td className="py-3 px-5 text-cofimar-text-muted font-mono">{c.harvest_date}</td>
+                        <td className="py-3 px-5 text-right text-cofimar-text-muted font-mono">{parseFloat(c.hectares || 0).toFixed(2)}</td>
+                        <td className="py-3 px-5 text-right text-cofimar-text font-mono">{Math.round(c.total_lbs || 0).toLocaleString()}</td>
+                        <td className="py-3 px-5 text-right font-bold text-cofimar-text font-mono">{Math.round(c.lbs_ha || 0).toLocaleString()}</td>
+                        <td className="py-3 px-5 text-right font-bold text-cofimar-accent font-mono">{parseFloat(c.survival_pct || 0).toFixed(1)}%</td>
+                        <td className="py-3 px-5 text-right text-cofimar-text font-mono">{Math.round(c.feed_lbs || 0).toLocaleString()}</td>
+                        <td className="py-3 px-5 text-right">
+                          <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                            c.fca <= 1.35 ? 'bg-cofimar-success/15 text-cofimar-success' : c.fca <= 1.70 ? 'bg-cofimar-warning/15 text-cofimar-warning' : 'bg-cofimar-danger/15 text-cofimar-danger'
+                          }`}>
+                            {parseFloat(c.fca || 0).toFixed(2)}
+                          </span>
                         </td>
+                        {role === 'admin' && (
+                          <td className="py-3 px-5 text-center space-x-2">
+                            <button
+                              onClick={() => handleOpenEdit(c)}
+                              className="bg-cofimar-surface-secondary hover:bg-cofimar-surface-hover text-cofimar-primary p-1.5 rounded-lg border border-cofimar-border transition"
+                              title="Editar"
+                            >
+                              <Edit2 className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                              onClick={() => handleDelete(c.id)}
+                              className="bg-cofimar-surface-secondary hover:bg-red-50 dark:hover:bg-red-950/20 text-cofimar-danger p-1.5 rounded-lg border border-cofimar-border transition"
+                              title="Eliminar"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </td>
+                        )}
                       </tr>
                     ))
                   )}
@@ -495,22 +707,22 @@ const Crud: React.FC = () => {
 
       {/* CRUD Input Dialog Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-fadeIn">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-[8px] animate-fadeIn">
           <div className="glass-card w-full max-w-2xl rounded-2xl border border-cofimar-border/80 shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
             
             {/* Header */}
             <div className="p-6 border-b border-cofimar-border/60 flex items-center justify-between">
               <div>
-                <h3 className="text-lg font-display font-bold text-white">
+                <h3 className="text-lg font-display font-bold text-cofimar-text">
                   {editMode ? 'Editar Registro' : 'Agregar Nuevo Registro'}
                 </h3>
-                <span className="text-[10px] text-slate-400 font-mono">
+                <span className="text-[10px] text-cofimar-text-muted font-mono">
                   MÓDULO: {activeTab.toUpperCase()} {editMode ? `[ID/CODE: ${selectedId}]` : ''}
                 </span>
               </div>
               <button
                 onClick={() => setIsModalOpen(false)}
-                className="bg-slate-900 hover:bg-slate-800 p-2 rounded-lg border border-slate-800 text-slate-400 hover:text-white transition"
+                className="bg-cofimar-surface-secondary hover:bg-cofimar-surface-hover p-2 rounded-lg border border-cofimar-border text-cofimar-text-muted hover:text-cofimar-text transition"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -525,53 +737,53 @@ const Crud: React.FC = () => {
             )}
 
             {/* Form Body */}
-            <form onSubmit={handleSubmit} className="p-6 space-y-5 overflow-y-auto flex-1 text-slate-200">
+            <form onSubmit={handleSubmit} className="p-6 space-y-5 overflow-y-auto flex-1 text-cofimar-text bg-cofimar-bg/10">
               
               {/* --- PONDS FORM --- */}
               {activeTab === 'ponds' && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-mono text-slate-450 uppercase block">Código Piscina *</label>
+                    <label className="text-[10px] font-mono text-cofimar-text-muted uppercase block">Código Piscina *</label>
                     <input
                       type="text"
                       required
                       disabled={editMode}
                       value={pondForm.code}
                       onChange={(e) => setPondForm({ ...pondForm, code: e.target.value.toUpperCase() })}
-                      className="w-full bg-slate-900/60 border border-slate-700/60 rounded-xl px-4 py-2.5 font-mono text-sm text-white focus:outline-none focus:border-cofimar-primary disabled:opacity-50"
+                      className="w-full bg-cofimar-bg/50 border border-cofimar-border rounded-lg px-4.5 py-2.5 font-mono text-sm text-cofimar-text focus:outline-none focus:border-cofimar-primary focus:ring-1 focus:ring-cofimar-primary/30 transition-all duration-200 disabled:opacity-50"
                       placeholder="Ej: TU 02"
                     />
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-mono text-slate-450 uppercase block">Sector</label>
+                    <label className="text-[10px] font-mono text-cofimar-text-muted uppercase block">Sector</label>
                     <input
                       type="text"
                       value={pondForm.sector}
                       onChange={(e) => setPondForm({ ...pondForm, sector: e.target.value.toUpperCase() })}
-                      className="w-full bg-slate-900/60 border border-slate-700/60 rounded-xl px-4 py-2.5 font-mono text-sm text-white focus:outline-none focus:border-cofimar-primary"
+                      className="w-full bg-cofimar-bg/50 border border-cofimar-border rounded-lg px-4.5 py-2.5 font-mono text-sm text-cofimar-text focus:outline-none focus:border-cofimar-primary focus:ring-1 focus:ring-cofimar-primary/30 transition-all duration-200"
                       placeholder="Ej: TUNA"
                     />
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-mono text-slate-450 uppercase block">Hectáreas (Has) *</label>
+                    <label className="text-[10px] font-mono text-cofimar-text-muted uppercase block">Hectáreas (Has) *</label>
                     <input
                       type="number"
                       step="0.01"
                       required
                       value={pondForm.hectares}
                       onChange={(e) => setPondForm({ ...pondForm, hectares: parseFloat(e.target.value) })}
-                      className="w-full bg-slate-900/60 border border-slate-700/60 rounded-xl px-4 py-2.5 font-mono text-sm text-white focus:outline-none focus:border-cofimar-primary"
+                      className="w-full bg-cofimar-bg/50 border border-cofimar-border rounded-lg px-4.5 py-2.5 font-mono text-sm text-cofimar-text focus:outline-none focus:border-cofimar-primary focus:ring-1 focus:ring-cofimar-primary/30 transition-all duration-200"
                     />
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-mono text-slate-450 uppercase block">Certificación</label>
+                    <label className="text-[10px] font-mono text-cofimar-text-muted uppercase block">Certificación</label>
                     <select
                       value={pondForm.certification}
                       onChange={(e) => setPondForm({ ...pondForm, certification: e.target.value })}
-                      className="w-full bg-slate-900/60 border border-slate-700/60 rounded-xl px-4 py-2.5 font-mono text-sm text-white focus:outline-none focus:border-cofimar-primary"
+                      className="w-full bg-cofimar-bg/50 border border-cofimar-border rounded-lg px-4.5 py-2.5 font-mono text-sm text-cofimar-text focus:outline-none focus:border-cofimar-primary focus:ring-1 focus:ring-cofimar-primary/30 transition-all duration-200"
                     >
                       <option value="ASC">ASC</option>
                       <option value="ASC-BAP">ASC-BAP</option>
@@ -585,12 +797,12 @@ const Crud: React.FC = () => {
               {activeTab === 'harvests' && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-mono text-slate-450 uppercase block">Piscina Relacionada *</label>
+                    <label className="text-[10px] font-mono text-cofimar-text-muted uppercase block">Piscina Relacionada *</label>
                     <select
                       required
                       value={harvestForm.pond_code}
                       onChange={(e) => setHarvestForm({ ...harvestForm, pond_code: e.target.value })}
-                      className="w-full bg-slate-900/60 border border-slate-700/60 rounded-xl px-4 py-2.5 font-mono text-sm text-white focus:outline-none focus:border-cofimar-primary"
+                      className="w-full bg-cofimar-bg/50 border border-cofimar-border rounded-lg px-4.5 py-2.5 font-mono text-sm text-cofimar-text focus:outline-none focus:border-cofimar-primary focus:ring-1 focus:ring-cofimar-primary/30 transition-all duration-200"
                     >
                       {allPondsCatalog.map((p) => (
                         <option key={p.code} value={p.code}>{p.code} ({p.sector || 'Sin sector'})</option>
@@ -599,11 +811,11 @@ const Crud: React.FC = () => {
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-mono text-slate-450 uppercase block">Actividad *</label>
+                    <label className="text-[10px] font-mono text-cofimar-text-muted uppercase block">Actividad *</label>
                     <select
                       value={harvestForm.activity}
                       onChange={(e) => setHarvestForm({ ...harvestForm, activity: e.target.value })}
-                      className="w-full bg-slate-900/60 border border-slate-700/60 rounded-xl px-4 py-2.5 font-mono text-sm text-white focus:outline-none focus:border-cofimar-primary"
+                      className="w-full bg-cofimar-bg/50 border border-cofimar-border rounded-lg px-4.5 py-2.5 font-mono text-sm text-cofimar-text focus:outline-none focus:border-cofimar-primary focus:ring-1 focus:ring-cofimar-primary/30 transition-all duration-200"
                     >
                       <option value="PESCA">PESCA (Liquidación Final)</option>
                       <option value="RALEO">RALEO (Cosecha Intermedia)</option>
@@ -611,79 +823,79 @@ const Crud: React.FC = () => {
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-mono text-slate-450 uppercase block">Fecha de Cosecha *</label>
+                    <label className="text-[10px] font-mono text-cofimar-text-muted uppercase block">Fecha de Cosecha *</label>
                     <input
                       type="date"
                       required
                       value={harvestForm.harvest_date}
                       onChange={(e) => setHarvestForm({ ...harvestForm, harvest_date: e.target.value })}
-                      className="w-full bg-slate-900/60 border border-slate-700/60 rounded-xl px-4 py-2.5 font-mono text-sm text-white focus:outline-none focus:border-cofimar-primary"
+                      className="w-full bg-cofimar-bg/50 border border-cofimar-border rounded-lg px-4.5 py-2.5 font-mono text-sm text-cofimar-text focus:outline-none focus:border-cofimar-primary focus:ring-1 focus:ring-cofimar-primary/30 transition-all duration-200"
                     />
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-mono text-slate-450 uppercase block">Jefe de Sector / Responsable</label>
+                    <label className="text-[10px] font-mono text-cofimar-text-muted uppercase block">Jefe de Sector / Responsable</label>
                     <input
                       type="text"
                       value={harvestForm.sector_chief}
                       onChange={(e) => setHarvestForm({ ...harvestForm, sector_chief: e.target.value })}
-                      className="w-full bg-slate-900/60 border border-slate-700/60 rounded-xl px-4 py-2.5 font-mono text-sm text-white focus:outline-none focus:border-cofimar-primary"
+                      className="w-full bg-cofimar-bg/50 border border-cofimar-border rounded-lg px-4.5 py-2.5 font-mono text-sm text-cofimar-text focus:outline-none focus:border-cofimar-primary focus:ring-1 focus:ring-cofimar-primary/30 transition-all duration-200"
                       placeholder="Ej: GUSTAVO CARRASCO"
                     />
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-mono text-slate-450 uppercase block">Libras Camaronera (Farm Lbs) *</label>
+                    <label className="text-[10px] font-mono text-cofimar-text-muted uppercase block">Libras Camaronera (Farm Lbs) *</label>
                     <input
                       type="number"
                       required
                       value={harvestForm.lbs_farm}
                       onChange={(e) => setHarvestForm({ ...harvestForm, lbs_farm: parseFloat(e.target.value) })}
-                      className="w-full bg-slate-900/60 border border-slate-700/60 rounded-xl px-4 py-2.5 font-mono text-sm text-white focus:outline-none focus:border-cofimar-primary"
+                      className="w-full bg-cofimar-bg/50 border border-cofimar-border rounded-lg px-4.5 py-2.5 font-mono text-sm text-cofimar-text focus:outline-none focus:border-cofimar-primary focus:ring-1 focus:ring-cofimar-primary/30 transition-all duration-200"
                     />
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-mono text-slate-450 uppercase block">Libras Planta (Plant Lbs) *</label>
+                    <label className="text-[10px] font-mono text-cofimar-text-muted uppercase block">Libras Planta (Plant Lbs) *</label>
                     <input
                       type="number"
                       required
                       value={harvestForm.lbs_plant}
                       onChange={(e) => setHarvestForm({ ...harvestForm, lbs_plant: parseFloat(e.target.value) })}
-                      className="w-full bg-slate-900/60 border border-slate-700/60 rounded-xl px-4 py-2.5 font-mono text-sm text-white focus:outline-none focus:border-cofimar-primary"
+                      className="w-full bg-cofimar-bg/50 border border-cofimar-border rounded-lg px-4.5 py-2.5 font-mono text-sm text-cofimar-text focus:outline-none focus:border-cofimar-primary focus:ring-1 focus:ring-cofimar-primary/30 transition-all duration-200"
                     />
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-mono text-slate-450 uppercase block">Gramaje Camaronera *</label>
+                    <label className="text-[10px] font-mono text-cofimar-text-muted uppercase block">Gramaje Camaronera *</label>
                     <input
                       type="number"
                       step="0.01"
                       required
                       value={harvestForm.gr_farm}
                       onChange={(e) => setHarvestForm({ ...harvestForm, gr_farm: parseFloat(e.target.value) })}
-                      className="w-full bg-slate-900/60 border border-slate-700/60 rounded-xl px-4 py-2.5 font-mono text-sm text-white focus:outline-none focus:border-cofimar-primary"
+                      className="w-full bg-cofimar-bg/50 border border-cofimar-border rounded-lg px-4.5 py-2.5 font-mono text-sm text-cofimar-text focus:outline-none focus:border-cofimar-primary focus:ring-1 focus:ring-cofimar-primary/30 transition-all duration-200"
                     />
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-mono text-slate-450 uppercase block">Gramaje Planta *</label>
+                    <label className="text-[10px] font-mono text-cofimar-text-muted uppercase block">Gramaje Planta *</label>
                     <input
                       type="number"
                       step="0.01"
                       required
                       value={harvestForm.gr_plant}
                       onChange={(e) => setHarvestForm({ ...harvestForm, gr_plant: parseFloat(e.target.value) })}
-                      className="w-full bg-slate-900/60 border border-slate-700/60 rounded-xl px-4 py-2.5 font-mono text-sm text-white focus:outline-none focus:border-cofimar-primary"
+                      className="w-full bg-cofimar-bg/50 border border-cofimar-border rounded-lg px-4.5 py-2.5 font-mono text-sm text-cofimar-text focus:outline-none focus:border-cofimar-primary focus:ring-1 focus:ring-cofimar-primary/30 transition-all duration-200"
                     />
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-mono text-slate-450 uppercase block">Certificación de Cosecha</label>
+                    <label className="text-[10px] font-mono text-cofimar-text-muted uppercase block">Certificación de Cosecha</label>
                     <select
                       value={harvestForm.certification}
                       onChange={(e) => setHarvestForm({ ...harvestForm, certification: e.target.value })}
-                      className="w-full bg-slate-900/60 border border-slate-700/60 rounded-xl px-4 py-2.5 font-mono text-sm text-white focus:outline-none focus:border-cofimar-primary"
+                      className="w-full bg-cofimar-bg/50 border border-cofimar-border rounded-lg px-4.5 py-2.5 font-mono text-sm text-cofimar-text focus:outline-none focus:border-cofimar-primary focus:ring-1 focus:ring-cofimar-primary/30 transition-all duration-200"
                     >
                       <option value="ASC">ASC</option>
                       <option value="ASC-BAP">ASC-BAP</option>
@@ -697,12 +909,12 @@ const Crud: React.FC = () => {
               {activeTab === 'seedings' && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-mono text-slate-450 uppercase block">Piscina *</label>
+                    <label className="text-[10px] font-mono text-cofimar-text-muted uppercase block">Piscina *</label>
                     <select
                       required
                       value={seedingForm.pond_code}
                       onChange={(e) => setSeedingForm({ ...seedingForm, pond_code: e.target.value })}
-                      className="w-full bg-slate-900/60 border border-slate-700/60 rounded-xl px-4 py-2.5 font-mono text-sm text-white focus:outline-none focus:border-cofimar-primary"
+                      className="w-full bg-cofimar-bg/50 border border-cofimar-border rounded-lg px-4.5 py-2.5 font-mono text-sm text-cofimar-text focus:outline-none focus:border-cofimar-primary focus:ring-1 focus:ring-cofimar-primary/30 transition-all duration-200"
                     >
                       {allPondsCatalog.map((p) => (
                         <option key={p.code} value={p.code}>{p.code}</option>
@@ -711,11 +923,11 @@ const Crud: React.FC = () => {
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-mono text-slate-450 uppercase block">Aguaje *</label>
+                    <label className="text-[10px] font-mono text-cofimar-text-muted uppercase block">Aguaje *</label>
                     <select
                       value={seedingForm.aguaje}
                       onChange={(e) => setSeedingForm({ ...seedingForm, aguaje: e.target.value })}
-                      className="w-full bg-slate-900/60 border border-slate-700/60 rounded-xl px-4 py-2.5 font-mono text-sm text-white focus:outline-none focus:border-cofimar-primary"
+                      className="w-full bg-cofimar-bg/50 border border-cofimar-border rounded-lg px-4.5 py-2.5 font-mono text-sm text-cofimar-text focus:outline-none focus:border-cofimar-primary focus:ring-1 focus:ring-cofimar-primary/30 transition-all duration-200"
                     >
                       <option value="AGUAJE 1">AGUAJE 1</option>
                       <option value="AGUAJE 2">AGUAJE 2</option>
@@ -725,76 +937,76 @@ const Crud: React.FC = () => {
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-mono text-slate-450 uppercase block">Fecha de Siembra *</label>
+                    <label className="text-[10px] font-mono text-cofimar-text-muted uppercase block">Fecha de Siembra *</label>
                     <input
                       type="date"
                       required
                       value={seedingForm.seeding_date}
                       onChange={(e) => setSeedingForm({ ...seedingForm, seeding_date: e.target.value })}
-                      className="w-full bg-slate-900/60 border border-slate-700/60 rounded-xl px-4 py-2.5 font-mono text-sm text-white focus:outline-none focus:border-cofimar-primary"
+                      className="w-full bg-cofimar-bg/50 border border-cofimar-border rounded-lg px-4.5 py-2.5 font-mono text-sm text-cofimar-text focus:outline-none focus:border-cofimar-primary focus:ring-1 focus:ring-cofimar-primary/30 transition-all duration-200"
                     />
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-mono text-slate-450 uppercase block">Fecha Transferencia</label>
+                    <label className="text-[10px] font-mono text-cofimar-text-muted uppercase block">Fecha Transferencia</label>
                     <input
                       type="date"
                       value={seedingForm.transfer_date}
                       onChange={(e) => setSeedingForm({ ...seedingForm, transfer_date: e.target.value })}
-                      className="w-full bg-slate-900/60 border border-slate-700/60 rounded-xl px-4 py-2.5 font-mono text-sm text-white focus:outline-none focus:border-cofimar-primary"
+                      className="w-full bg-cofimar-bg/50 border border-cofimar-border rounded-lg px-4.5 py-2.5 font-mono text-sm text-cofimar-text focus:outline-none focus:border-cofimar-primary focus:ring-1 focus:ring-cofimar-primary/30 transition-all duration-200"
                     />
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-mono text-slate-450 uppercase block">Cantidad de Larvas *</label>
+                    <label className="text-[10px] font-mono text-cofimar-text-muted uppercase block">Cantidad de Larvas *</label>
                     <input
                       type="number"
                       required
                       value={seedingForm.animals}
                       onChange={(e) => setSeedingForm({ ...seedingForm, animals: parseInt(e.target.value) })}
-                      className="w-full bg-slate-900/60 border border-slate-700/60 rounded-xl px-4 py-2.5 font-mono text-sm text-white focus:outline-none focus:border-cofimar-primary"
+                      className="w-full bg-cofimar-bg/50 border border-cofimar-border rounded-lg px-4.5 py-2.5 font-mono text-sm text-cofimar-text focus:outline-none focus:border-cofimar-primary focus:ring-1 focus:ring-cofimar-primary/30 transition-all duration-200"
                     />
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-mono text-slate-450 uppercase block">Laboratorio Origen</label>
+                    <label className="text-[10px] font-mono text-cofimar-text-muted uppercase block">Laboratorio Origen</label>
                     <input
                       type="text"
                       value={seedingForm.laboratory}
                       onChange={(e) => setSeedingForm({ ...seedingForm, laboratory: e.target.value.toUpperCase() })}
-                      className="w-full bg-slate-900/60 border border-slate-700/60 rounded-xl px-4 py-2.5 font-mono text-sm text-white focus:outline-none focus:border-cofimar-primary"
+                      className="w-full bg-cofimar-bg/50 border border-cofimar-border rounded-lg px-4.5 py-2.5 font-mono text-sm text-cofimar-text focus:outline-none focus:border-cofimar-primary focus:ring-1 focus:ring-cofimar-primary/30 transition-all duration-200"
                       placeholder="Ej: LAB COFIMAR"
                     />
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-mono text-slate-450 uppercase block">Cepa de Nauplio</label>
+                    <label className="text-[10px] font-mono text-cofimar-text-muted uppercase block">Cepa de Nauplio</label>
                     <input
                       type="text"
                       value={seedingForm.nauplio}
                       onChange={(e) => setSeedingForm({ ...seedingForm, nauplio: e.target.value.toUpperCase() })}
-                      className="w-full bg-slate-900/60 border border-slate-700/60 rounded-xl px-4 py-2.5 font-mono text-sm text-white focus:outline-none focus:border-cofimar-primary"
+                      className="w-full bg-cofimar-bg/50 border border-cofimar-border rounded-lg px-4.5 py-2.5 font-mono text-sm text-cofimar-text focus:outline-none focus:border-cofimar-primary focus:ring-1 focus:ring-cofimar-primary/30 transition-all duration-200"
                       placeholder="Ej: CEPA WILD"
                     />
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-mono text-slate-450 uppercase block">Sobrevivencia Estimada (%)</label>
+                    <label className="text-[10px] font-mono text-cofimar-text-muted uppercase block">Sobrevivencia Estimada (%)</label>
                     <input
                       type="number"
                       step="0.01"
                       value={seedingForm.survival_pct}
                       onChange={(e) => setSeedingForm({ ...seedingForm, survival_pct: parseFloat(e.target.value) })}
-                      className="w-full bg-slate-900/60 border border-slate-700/60 rounded-xl px-4 py-2.5 font-mono text-sm text-white focus:outline-none focus:border-cofimar-primary"
+                      className="w-full bg-cofimar-bg/50 border border-cofimar-border rounded-lg px-4.5 py-2.5 font-mono text-sm text-cofimar-text focus:outline-none focus:border-cofimar-primary focus:ring-1 focus:ring-cofimar-primary/30 transition-all duration-200"
                     />
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-mono text-slate-450 uppercase block">Ablación</label>
+                    <label className="text-[10px] font-mono text-cofimar-text-muted uppercase block">Ablación</label>
                     <select
                       value={seedingForm.ablation}
                       onChange={(e) => setSeedingForm({ ...seedingForm, ablation: e.target.value })}
-                      className="w-full bg-slate-900/60 border border-slate-700/60 rounded-xl px-4 py-2.5 font-mono text-sm text-white focus:outline-none focus:border-cofimar-primary"
+                      className="w-full bg-cofimar-bg/50 border border-cofimar-border rounded-lg px-4.5 py-2.5 font-mono text-sm text-cofimar-text focus:outline-none focus:border-cofimar-primary focus:ring-1 focus:ring-cofimar-primary/30 transition-all duration-200"
                     >
                       <option value="SÍ">SÍ (Ablada)</option>
                       <option value="NO">NO (Sin ablar)</option>
@@ -802,15 +1014,321 @@ const Crud: React.FC = () => {
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-mono text-slate-450 uppercase block">Peso Inicial (Gramaje W) *</label>
+                    <label className="text-[10px] font-mono text-cofimar-text-muted uppercase block">Peso Inicial (Gramaje W) *</label>
                     <input
                       type="number"
                       step="0.001"
                       required
                       value={seedingForm.weight_gr}
                       onChange={(e) => setSeedingForm({ ...seedingForm, weight_gr: parseFloat(e.target.value) })}
-                      className="w-full bg-slate-900/60 border border-slate-700/60 rounded-xl px-4 py-2.5 font-mono text-sm text-white focus:outline-none focus:border-cofimar-primary"
+                      className="w-full bg-cofimar-bg/50 border border-cofimar-border rounded-lg px-4.5 py-2.5 font-mono text-sm text-cofimar-text focus:outline-none focus:border-cofimar-primary focus:ring-1 focus:ring-cofimar-primary/30 transition-all duration-200"
                     />
+                  </div>
+                </div>
+              )}
+
+              {/* --- CYCLES FORM --- */}
+              {activeTab === 'cycles' && (
+                <div className="space-y-6">
+                  {/* Sección 1: Datos Generales */}
+                  <div>
+                    <h4 className="text-xs font-mono font-bold text-cofimar-primary border-b border-cofimar-border/30 pb-1.5 mb-3">1. DATOS GENERALES</h4>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] font-mono text-cofimar-text-muted uppercase block">Piscina *</label>
+                        <select
+                          required
+                          value={cycleForm.pond_code}
+                          onChange={(e) => handleCyclePondChange(e.target.value)}
+                          className="w-full bg-cofimar-bg/50 border border-cofimar-border rounded-lg px-4.5 py-2.5 font-mono text-sm text-cofimar-text focus:outline-none focus:border-cofimar-primary focus:ring-1 focus:ring-cofimar-primary/30 transition-all duration-200"
+                        >
+                          {allPondsCatalog.map((p) => (
+                            <option key={p.code} value={p.code}>{p.code}</option>
+                          ))}
+                        </select>
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] font-mono text-cofimar-text-muted uppercase block">Aguaje *</label>
+                        <select
+                          value={cycleForm.aguaje}
+                          onChange={(e) => setCycleForm({ ...cycleForm, aguaje: e.target.value })}
+                          className="w-full bg-cofimar-bg/50 border border-cofimar-border rounded-lg px-4.5 py-2.5 font-mono text-sm text-cofimar-text focus:outline-none focus:border-cofimar-primary focus:ring-1 focus:ring-cofimar-primary/30 transition-all duration-200"
+                        >
+                          <option value="AGUAJE 1">AGUAJE 1</option>
+                          <option value="AGUAJE 2">AGUAJE 2</option>
+                          <option value="QUIEBRA 1">QUIEBRA 1</option>
+                          <option value="QUIEBRA 2">QUIEBRA 2</option>
+                        </select>
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] font-mono text-cofimar-text-muted uppercase block">Fecha de Cosecha *</label>
+                        <input
+                          type="date"
+                          required
+                          value={cycleForm.harvest_date}
+                          onChange={(e) => setCycleForm({ ...cycleForm, harvest_date: e.target.value })}
+                          className="w-full bg-cofimar-bg/50 border border-cofimar-border rounded-lg px-4.5 py-2.5 font-mono text-sm text-cofimar-text focus:outline-none focus:border-cofimar-primary focus:ring-1 focus:ring-cofimar-primary/30 transition-all duration-200"
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] font-mono text-cofimar-text-muted uppercase block">Año / Mes</label>
+                        <div className="grid grid-cols-2 gap-2">
+                          <input
+                            type="number"
+                            value={cycleForm.year}
+                            onChange={(e) => setCycleForm({ ...cycleForm, year: parseInt(e.target.value) })}
+                            className="w-full bg-cofimar-bg/50 border border-cofimar-border rounded-xl px-3 py-2.5 font-mono text-sm text-cofimar-text focus:outline-none focus:ring-1 focus:ring-cofimar-primary/30 transition-all duration-200"
+                            placeholder="Año"
+                          />
+                          <input
+                            type="text"
+                            value={cycleForm.month}
+                            onChange={(e) => setCycleForm({ ...cycleForm, month: e.target.value.toUpperCase() })}
+                            className="w-full bg-cofimar-bg/50 border border-cofimar-border rounded-xl px-3 py-2.5 font-mono text-sm text-cofimar-text focus:outline-none focus:ring-1 focus:ring-cofimar-primary/30 transition-all duration-200"
+                            placeholder="Mes"
+                          />
+                        </div>
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] font-mono text-cofimar-text-muted uppercase block">Jefe de Sector</label>
+                        <input
+                          type="text"
+                          value={cycleForm.sector_chief}
+                          onChange={(e) => setCycleForm({ ...cycleForm, sector_chief: e.target.value })}
+                          className="w-full bg-cofimar-bg/50 border border-cofimar-border rounded-lg px-4.5 py-2.5 font-mono text-sm text-cofimar-text focus:outline-none focus:border-cofimar-primary focus:ring-1 focus:ring-cofimar-primary/30 transition-all duration-200"
+                          placeholder="Ej: GUSTAVO CARRASCO"
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] font-mono text-cofimar-text-muted uppercase block">Hectáreas / Sector</label>
+                        <div className="grid grid-cols-2 gap-2">
+                          <input
+                            type="number"
+                            step="0.01"
+                            value={cycleForm.hectares}
+                            onChange={(e) => setCycleForm({ ...cycleForm, hectares: parseFloat(e.target.value) })}
+                            className="w-full bg-cofimar-bg/50 border border-cofimar-border rounded-xl px-3 py-2.5 font-mono text-sm text-cofimar-text focus:outline-none focus:ring-1 focus:ring-cofimar-primary/30 transition-all duration-200"
+                            placeholder="Hectáreas"
+                          />
+                          <input
+                            type="text"
+                            value={cycleForm.sector}
+                            onChange={(e) => setCycleForm({ ...cycleForm, sector: e.target.value.toUpperCase() })}
+                            className="w-full bg-cofimar-bg/50 border border-cofimar-border rounded-xl px-3 py-2.5 font-mono text-sm text-cofimar-text focus:outline-none focus:ring-1 focus:ring-cofimar-primary/30 transition-all duration-200"
+                            placeholder="Sector"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Sección 2: Datos de Siembra */}
+                  <div>
+                    <h4 className="text-xs font-mono font-bold text-cofimar-primary border-b border-cofimar-border/30 pb-1.5 mb-3">2. DATOS DE SIEMBRA</h4>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] font-mono text-cofimar-text-muted uppercase block">Fecha de Siembra</label>
+                        <input
+                          type="date"
+                          value={cycleForm.seeding_date}
+                          onChange={(e) => setCycleForm({ ...cycleForm, seeding_date: e.target.value })}
+                          className="w-full bg-cofimar-bg/50 border border-cofimar-border rounded-lg px-4.5 py-2.5 font-mono text-sm text-cofimar-text focus:outline-none focus:border-cofimar-primary focus:ring-1 focus:ring-cofimar-primary/30 transition-all duration-200"
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] font-mono text-cofimar-text-muted uppercase block">Larvas Sembradas</label>
+                        <input
+                          type="number"
+                          value={cycleForm.animals_seeded}
+                          onChange={(e) => setCycleForm({ ...cycleForm, animals_seeded: parseInt(e.target.value) })}
+                          className="w-full bg-cofimar-bg/50 border border-cofimar-border rounded-lg px-4.5 py-2.5 font-mono text-sm text-cofimar-text focus:outline-none focus:border-cofimar-primary focus:ring-1 focus:ring-cofimar-primary/30 transition-all duration-200"
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] font-mono text-cofimar-text-muted uppercase block">Laboratorio / Nauplio</label>
+                        <div className="grid grid-cols-2 gap-2">
+                          <input
+                            type="text"
+                            value={cycleForm.laboratory}
+                            onChange={(e) => setCycleForm({ ...cycleForm, laboratory: e.target.value.toUpperCase() })}
+                            className="w-full bg-cofimar-bg/50 border border-cofimar-border rounded-xl px-3 py-2.5 font-mono text-sm text-cofimar-text focus:outline-none focus:ring-1 focus:ring-cofimar-primary/30 transition-all duration-200"
+                            placeholder="Laboratorio"
+                          />
+                          <input
+                            type="text"
+                            value={cycleForm.nauplio}
+                            onChange={(e) => setCycleForm({ ...cycleForm, nauplio: e.target.value.toUpperCase() })}
+                            className="w-full bg-cofimar-bg/50 border border-cofimar-border rounded-xl px-3 py-2.5 font-mono text-sm text-cofimar-text focus:outline-none focus:ring-1 focus:ring-cofimar-primary/30 transition-all duration-200"
+                            placeholder="Nauplio"
+                          />
+                        </div>
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] font-mono text-cofimar-text-muted uppercase block">Días / Secos / Pre</label>
+                        <div className="grid grid-cols-3 gap-2">
+                          <input
+                            type="number"
+                            value={cycleForm.days}
+                            onChange={(e) => setCycleForm({ ...cycleForm, days: parseInt(e.target.value) })}
+                            className="w-full bg-cofimar-bg/50 border border-cofimar-border rounded-xl px-2 py-2.5 font-mono text-xs text-cofimar-text focus:outline-none focus:ring-1 focus:ring-cofimar-primary/30 transition-all duration-200"
+                            placeholder="Días"
+                          />
+                          <input
+                            type="number"
+                            value={cycleForm.dry_days}
+                            onChange={(e) => setCycleForm({ ...cycleForm, dry_days: parseInt(e.target.value) })}
+                            className="w-full bg-cofimar-bg/50 border border-cofimar-border rounded-xl px-2 py-2.5 font-mono text-xs text-cofimar-text focus:outline-none focus:ring-1 focus:ring-cofimar-primary/30 transition-all duration-200"
+                            placeholder="Secos"
+                          />
+                          <input
+                            type="text"
+                            value={cycleForm.pre}
+                            onChange={(e) => setCycleForm({ ...cycleForm, pre: e.target.value })}
+                            className="w-full bg-cofimar-bg/50 border border-cofimar-border rounded-xl px-2 py-2.5 font-mono text-xs text-cofimar-text focus:outline-none focus:ring-1 focus:ring-cofimar-primary/30 transition-all duration-200"
+                            placeholder="Pre-criad"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Sección 3: Raleos y Cosecha */}
+                  <div>
+                    <h4 className="text-xs font-mono font-bold text-cofimar-primary border-b border-cofimar-border/30 pb-1.5 mb-3">3. RESULTADOS DE COSECHA</h4>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {/* Raleos */}
+                      <div className="space-y-3 p-3.5 bg-cofimar-surface-secondary rounded-xl border border-cofimar-border/20">
+                        <span className="text-[10px] font-mono font-bold text-cofimar-accent block uppercase">Raleo (Parcial)</span>
+                        <div className="grid grid-cols-2 gap-2">
+                          <div className="space-y-1.5">
+                            <label className="text-[9px] font-mono text-cofimar-text-muted uppercase block">Lbs Raleo Cam.</label>
+                            <input
+                              type="number"
+                              value={cycleForm.lbs_trawl_farm}
+                              onChange={(e) => setCycleForm({ ...cycleForm, lbs_trawl_farm: parseFloat(e.target.value) })}
+                              className="w-full bg-cofimar-bg/50 border border-cofimar-border rounded-xl px-3 py-2 font-mono text-xs text-cofimar-text focus:outline-none focus:ring-1 focus:ring-cofimar-primary/30 transition-all duration-200"
+                            />
+                          </div>
+                          <div className="space-y-1.5">
+                            <label className="text-[9px] font-mono text-cofimar-text-muted uppercase block">Gr Raleo Cam.</label>
+                            <input
+                              type="number"
+                              step="0.01"
+                              value={cycleForm.gr_trawl_farm}
+                              onChange={(e) => setCycleForm({ ...cycleForm, gr_trawl_farm: parseFloat(e.target.value) })}
+                              className="w-full bg-cofimar-bg/50 border border-cofimar-border rounded-xl px-3 py-2 font-mono text-xs text-cofimar-text focus:outline-none focus:ring-1 focus:ring-cofimar-primary/30 transition-all duration-200"
+                            />
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-2">
+                          <div className="space-y-1.5">
+                            <label className="text-[9px] font-mono text-cofimar-text-muted uppercase block">Lbs Raleo Planta</label>
+                            <input
+                              type="number"
+                              value={cycleForm.lbs_trawl_plant}
+                              onChange={(e) => setCycleForm({ ...cycleForm, lbs_trawl_plant: parseFloat(e.target.value) })}
+                              className="w-full bg-cofimar-bg/50 border border-cofimar-border rounded-xl px-3 py-2 font-mono text-xs text-cofimar-text focus:outline-none focus:ring-1 focus:ring-cofimar-primary/30 transition-all duration-200"
+                            />
+                          </div>
+                          <div className="space-y-1.5">
+                            <label className="text-[9px] font-mono text-cofimar-text-muted uppercase block">Gr Raleo Planta</label>
+                            <input
+                              type="number"
+                              step="0.01"
+                              value={cycleForm.gr_trawl_plant}
+                              onChange={(e) => setCycleForm({ ...cycleForm, gr_trawl_plant: parseFloat(e.target.value) })}
+                              className="w-full bg-cofimar-bg/50 border border-cofimar-border rounded-xl px-3 py-2 font-mono text-xs text-cofimar-text focus:outline-none focus:ring-1 focus:ring-cofimar-primary/30 transition-all duration-200"
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Cosecha Final */}
+                      <div className="space-y-3 p-3.5 bg-cofimar-surface-secondary rounded-xl border border-cofimar-border/20">
+                        <span className="text-[10px] font-mono font-bold text-cofimar-success block uppercase">Pesca (Final)</span>
+                        <div className="grid grid-cols-2 gap-2">
+                          <div className="space-y-1.5">
+                            <label className="text-[9px] font-mono text-cofimar-text-muted uppercase block">Lbs Pesca Cam.</label>
+                            <input
+                              type="number"
+                              value={cycleForm.lbs_harvest_farm}
+                              onChange={(e) => setCycleForm({ ...cycleForm, lbs_harvest_farm: parseFloat(e.target.value) })}
+                              className="w-full bg-cofimar-bg/50 border border-cofimar-border rounded-xl px-3 py-2 font-mono text-xs text-cofimar-text focus:outline-none focus:ring-1 focus:ring-cofimar-primary/30 transition-all duration-200"
+                            />
+                          </div>
+                          <div className="space-y-1.5">
+                            <label className="text-[9px] font-mono text-cofimar-text-muted uppercase block">Gr Pesca Cam.</label>
+                            <input
+                              type="number"
+                              step="0.01"
+                              value={cycleForm.gr_harvest_farm}
+                              onChange={(e) => setCycleForm({ ...cycleForm, gr_harvest_farm: parseFloat(e.target.value) })}
+                              className="w-full bg-cofimar-bg/50 border border-cofimar-border rounded-xl px-3 py-2 font-mono text-xs text-cofimar-text focus:outline-none focus:ring-1 focus:ring-cofimar-primary/30 transition-all duration-200"
+                            />
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-2">
+                          <div className="space-y-1.5">
+                            <label className="text-[9px] font-mono text-cofimar-text-muted uppercase block">Lbs Pesca Planta</label>
+                            <input
+                              type="number"
+                              value={cycleForm.lbs_harvest_plant}
+                              onChange={(e) => setCycleForm({ ...cycleForm, lbs_harvest_plant: parseFloat(e.target.value) })}
+                              className="w-full bg-cofimar-bg/50 border border-cofimar-border rounded-xl px-3 py-2 font-mono text-xs text-cofimar-text focus:outline-none focus:ring-1 focus:ring-cofimar-primary/30 transition-all duration-200"
+                            />
+                          </div>
+                          <div className="space-y-1.5">
+                            <label className="text-[9px] font-mono text-cofimar-text-muted uppercase block">Gr Pesca Planta</label>
+                            <input
+                              type="number"
+                              step="0.01"
+                              value={cycleForm.gr_harvest_plant}
+                              onChange={(e) => setCycleForm({ ...cycleForm, gr_harvest_plant: parseFloat(e.target.value) })}
+                              className="w-full bg-cofimar-bg/50 border border-cofimar-border rounded-xl px-3 py-2 font-mono text-xs text-cofimar-text focus:outline-none focus:ring-1 focus:ring-cofimar-primary/30 transition-all duration-200"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Sección 4: Alimento Balanceado */}
+                  <div>
+                    <h4 className="text-xs font-mono font-bold text-cofimar-primary border-b border-cofimar-border/30 pb-1.5 mb-3">4. CONTROL DE ALIMENTO BALANCEADO</h4>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] font-mono text-cofimar-text-muted uppercase block">Libras de Balanceado (feed_lbs) *</label>
+                        <input
+                          type="number"
+                          required
+                          value={cycleForm.feed_lbs}
+                          onChange={(e) => setCycleForm({ ...cycleForm, feed_lbs: parseFloat(e.target.value) })}
+                          className="w-full bg-cofimar-bg/50 border border-cofimar-primary/40 rounded-lg px-4.5 py-2.5 font-mono text-sm text-cofimar-text focus:outline-none focus:border-cofimar-primary focus:ring-1 focus:ring-cofimar-primary/30 transition-all duration-200 font-bold"
+                          placeholder="Ej: 95000"
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] font-mono text-cofimar-text-muted uppercase block">Proveedor Balanceado</label>
+                        <input
+                          type="text"
+                          value={cycleForm.feed_supplier}
+                          onChange={(e) => setCycleForm({ ...cycleForm, feed_supplier: e.target.value })}
+                          className="w-full bg-cofimar-surface-secondary border border-cofimar-border rounded-lg px-4.5 py-2.5 font-mono text-sm text-cofimar-surface-active-text focus:outline-none"
+                          placeholder="Ej: SK, NC, CG"
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] font-mono text-cofimar-text-muted uppercase block">Modo Alimentación</label>
+                        <select
+                          value={cycleForm.feeding_mode}
+                          onChange={(e) => setCycleForm({ ...cycleForm, feeding_mode: e.target.value })}
+                          className="w-full bg-cofimar-surface-secondary border border-cofimar-border rounded-lg px-4.5 py-2.5 font-mono text-sm text-cofimar-surface-active-text focus:outline-none"
+                        >
+                          <option value="AUTOMATICA">AUTOMÁTICA</option>
+                          <option value="BOLEO">BOLEO (Manual)</option>
+                        </select>
+                      </div>
+                    </div>
                   </div>
                 </div>
               )}
@@ -820,7 +1338,7 @@ const Crud: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold px-5 py-2.5 rounded-xl transition duration-200 text-xs font-mono"
+                  className="bg-cofimar-surface-secondary hover:bg-cofimar-surface-hover text-cofimar-text-muted hover:text-cofimar-text font-bold px-5 py-2.5 rounded-xl border border-cofimar-border transition duration-200 text-xs font-mono"
                 >
                   CANCELAR
                 </button>

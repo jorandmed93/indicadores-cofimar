@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, UploadFile, File, HTTPException, status
 from sqlalchemy.orm import Session
 import os
 import shutil
+import tempfile
 
 from ..database import get_db
 from ..services.importer import import_excel_file
@@ -23,7 +24,7 @@ def import_excel(
         )
 
     # Save to a temporary file
-    temp_dir = "/tmp/cofimar_imports"
+    temp_dir = os.path.join(tempfile.gettempdir(), "cofimar_imports")
     os.makedirs(temp_dir, exist_ok=True)
     temp_file_path = os.path.join(temp_dir, f"temp_{os.getpid()}_{filename}")
 

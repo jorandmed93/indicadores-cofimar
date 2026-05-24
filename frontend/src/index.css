@@ -4,49 +4,126 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  /* Light Theme Variables (Pure Spotlight White & Apple Minimalist) */
+  --cofimar-bg: #FFFFFF;
+  --cofimar-surface: #FFFFFF;
+  --cofimar-primary: #007AFF;
+  --cofimar-accent: #5C5C60;
+  --cofimar-text: #1C1C1E;
+  --cofimar-border: #E5E5EA;
+
+  /* Extended Palette for Light */
+  --cofimar-text-secondary: #5C5C60;
+  --cofimar-text-muted: #8E8E93;
+  --cofimar-text-faint: #C7C7CC;
+  --cofimar-surface-secondary: #F6F6F9;
+  --cofimar-surface-hover: #EFEFEF;
+  --cofimar-surface-active: #000000;
+  --cofimar-surface-active-text: #FFFFFF;
+  --cofimar-badge-bg: #F2F2F7;
+  --cofimar-badge-text: #5C5C60;
+  --cofimar-panel-bg: #FAFAFC;
+
+  --scrollbar-track: #FFFFFF;
+  --scrollbar-thumb: #D2D2D7;
+  --scrollbar-thumb-hover: #007AFF;
+}
+
+.dark {
+  /* Dark Theme Variables (Ultra Premium Sleek Black) */
+  --cofimar-bg: #000000;
+  --cofimar-surface: #121214;
+  --cofimar-primary: #0A84FF;
+  --cofimar-accent: #8E8E93;
+  --cofimar-text: #F5F5F7;
+  --cofimar-border: #242428;
+
+  /* Extended Palette for Dark */
+  --cofimar-text-secondary: #AEAEB2;
+  --cofimar-text-muted: #636366;
+  --cofimar-text-faint: #48484A;
+  --cofimar-surface-secondary: #1C1C1E;
+  --cofimar-surface-hover: #26262B;
+  --cofimar-surface-active: #FFFFFF;
+  --cofimar-surface-active-text: #000000;
+  --cofimar-badge-bg: #1C1C1E;
+  --cofimar-badge-text: #AEAEB2;
+  --cofimar-panel-bg: #121214;
+
+  --scrollbar-track: #000000;
+  --scrollbar-thumb: #2C2C2E;
+  --scrollbar-thumb-hover: #0A84FF;
+}
+
 @layer base {
   body {
-    @apply bg-cofimar-bg text-cofimar-text font-body antialiased selection:bg-cofimar-primary selection:text-cofimar-bg;
+    background-color: var(--cofimar-bg);
+    color: var(--cofimar-text);
+    font-family: 'Inter', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
     margin: 0;
     min-height: 100vh;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+
+  ::selection {
+    background-color: color-mix(in srgb, var(--cofimar-primary) 25%, transparent);
+    color: var(--cofimar-text);
   }
 
   h1, h2, h3, h4, h5, h6 {
-    @apply font-display font-semibold tracking-wide text-white;
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    color: var(--cofimar-text);
+    transition: color 0.3s ease;
   }
 }
 
-/* Glassmorphism scrollbar */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--scrollbar-track); }
+::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--scrollbar-thumb-hover); }
 
-::-webkit-scrollbar-track {
-  background: #0A1628;
-}
-
-::-webkit-scrollbar-thumb {
-  background: #1E293B;
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #00C9A7;
-}
-
-/* Micro-animations and premium effects */
+/* Micro-animations */
 .hover-scale {
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 .hover-scale:hover {
-  transform: translateY(-2px);
+  transform: translateY(-1px) scale(1.005);
 }
 
 .glow-primary:hover {
-  box-shadow: 0 0 15px rgba(0, 201, 167, 0.25);
+  box-shadow: 0 0 15px color-mix(in srgb, var(--cofimar-primary) 15%, transparent);
 }
 
 .glass-card {
-  @apply bg-cofimar-surface/90 border border-cofimar-border/50 backdrop-blur-md;
+  background-color: var(--cofimar-surface);
+  border: 1px solid var(--cofimar-border);
+  transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Autofill fix */
+input:-webkit-autofill,
+input:-webkit-autofill:hover, 
+input:-webkit-autofill:focus, 
+input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 30px var(--cofimar-surface) inset !important;
+  -webkit-text-fill-color: var(--cofimar-text) !important;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
+/* Theme-aware utility classes */
+.text-secondary { color: var(--cofimar-text-secondary); }
+.text-muted { color: var(--cofimar-text-muted); }
+.text-faint { color: var(--cofimar-text-faint); }
+.bg-surface-secondary { background-color: var(--cofimar-surface-secondary); }
+.bg-surface-hover { background-color: var(--cofimar-surface-hover); }
+.bg-panel { background-color: var(--cofimar-panel-bg); }
+.badge-style {
+  background-color: var(--cofimar-badge-bg);
+  color: var(--cofimar-badge-text);
 }
