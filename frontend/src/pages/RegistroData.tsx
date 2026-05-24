@@ -5,6 +5,24 @@ import {
   CheckCircle2, AlertTriangle, ChevronRight, RefreshCw, HelpCircle
 } from 'lucide-react';
 
+const SECTOR_CHIEFS: { [key: string]: string } = {
+  'BARRACUDA': 'GUSTAVO CARRASCO',
+  'CATANUDA': 'VICTOR QUINTANA',
+  'CHERNA': 'SANTIAGO OBRIEN',
+  'DELFIN': 'RONNIE REYES',
+  'DORADO': 'JOSE CEDEÑO',
+  'GUATO': 'JULIO SANTOS',
+  'MANTARRAYA': 'GUSTAVO CARRASCO',
+  'MERO': 'RONNIE REYES',
+  'PAMPANO': 'GUSTAVO CARRASCO',
+  'PARGO ROJO': 'WILMER TORRES',
+  'ROBALO': 'VICTOR QUINTANA',
+  'TAMBULERO': 'ALFONSO GRUNAUER',
+  'TIBURON': 'ALFONSO GRUNAUER',
+  'TUNA': 'GUSTAVO CARRASCO',
+  'WAHOO': 'JUNIOR ESQUIVEL'
+};
+
 interface RegistroDataProps {
   role: 'admin' | 'viewer';
 }
@@ -97,13 +115,15 @@ const RegistroData: React.FC<RegistroDataProps> = ({ role }) => {
   const handleCyclePondChange = (code: string) => {
     const selectedPond = allPondsCatalog.find(p => p.code === code);
     if (selectedPond) {
+      const sectorUpper = (selectedPond.sector || '').toUpperCase();
       setCycleForm({
         ...cycleForm,
         pond_code: code,
         hectares: parseFloat(selectedPond.hectares || 0),
-        sector: selectedPond.sector || '',
+        sector: sectorUpper,
         certification: selectedPond.certification || 'ASC',
-        pond_name: selectedPond.code.split(' ')[1] || ''
+        pond_name: selectedPond.code.split(' ')[1] || '',
+        sector_chief: SECTOR_CHIEFS[sectorUpper] || cycleForm.sector_chief
       });
     } else {
       setCycleForm({
@@ -1080,13 +1100,25 @@ const RegistroData: React.FC<RegistroDataProps> = ({ role }) => {
                             className="w-full bg-cofimar-bg/50 border border-cofimar-border rounded-xl px-3 py-2.5 font-mono text-sm text-cofimar-text focus:outline-none focus:ring-1 focus:ring-cofimar-primary/30 transition-all duration-200"
                             placeholder="Año"
                           />
-                          <input
-                            type="text"
+                          <select
                             value={cycleForm.month}
-                            onChange={(e) => setCycleForm({ ...cycleForm, month: e.target.value.toUpperCase() })}
+                            onChange={(e) => setCycleForm({ ...cycleForm, month: e.target.value })}
                             className="w-full bg-cofimar-bg/50 border border-cofimar-border rounded-xl px-3 py-2.5 font-mono text-sm text-cofimar-text focus:outline-none focus:ring-1 focus:ring-cofimar-primary/30 transition-all duration-200"
-                            placeholder="Mes"
-                          />
+                          >
+                            <option value="">MES...</option>
+                            <option value="ENERO">ENERO</option>
+                            <option value="FEBRERO">FEBRERO</option>
+                            <option value="MARZO">MARZO</option>
+                            <option value="ABRIL">ABRIL</option>
+                            <option value="MAYO">MAYO</option>
+                            <option value="JUNIO">JUNIO</option>
+                            <option value="JULIO">JULIO</option>
+                            <option value="AGOSTO">AGOSTO</option>
+                            <option value="SEPTIEMBRE">SEPTIEMBRE</option>
+                            <option value="OCTUBRE">OCTUBRE</option>
+                            <option value="NOVIEMBRE">NOVIEMBRE</option>
+                            <option value="DICIEMBRE">DICIEMBRE</option>
+                          </select>
                         </div>
                       </div>
                       <div className="space-y-1.5">
@@ -1110,13 +1142,35 @@ const RegistroData: React.FC<RegistroDataProps> = ({ role }) => {
                             className="w-full bg-cofimar-bg/50 border border-cofimar-border rounded-xl px-3 py-2.5 font-mono text-sm text-cofimar-text focus:outline-none focus:ring-1 focus:ring-cofimar-primary/30 transition-all duration-200"
                             placeholder="Hectáreas"
                           />
-                          <input
-                            type="text"
+                          <select
                             value={cycleForm.sector}
-                            onChange={(e) => setCycleForm({ ...cycleForm, sector: e.target.value.toUpperCase() })}
+                            onChange={(e) => {
+                              const sec = e.target.value;
+                              setCycleForm({
+                                ...cycleForm,
+                                sector: sec,
+                                sector_chief: SECTOR_CHIEFS[sec] || cycleForm.sector_chief
+                              });
+                            }}
                             className="w-full bg-cofimar-bg/50 border border-cofimar-border rounded-xl px-3 py-2.5 font-mono text-sm text-cofimar-text focus:outline-none focus:ring-1 focus:ring-cofimar-primary/30 transition-all duration-200"
-                            placeholder="Sector"
-                          />
+                          >
+                            <option value="">SECTOR...</option>
+                            <option value="BARRACUDA">BARRACUDA</option>
+                            <option value="CATANUDA">CATANUDA</option>
+                            <option value="CHERNA">CHERNA</option>
+                            <option value="DELFIN">DELFIN</option>
+                            <option value="DORADO">DORADO</option>
+                            <option value="GUATO">GUATO</option>
+                            <option value="MANTARRAYA">MANTARRAYA</option>
+                            <option value="MERO">MERO</option>
+                            <option value="PAMPANO">PAMPANO</option>
+                            <option value="PARGO ROJO">PARGO ROJO</option>
+                            <option value="ROBALO">ROBALO</option>
+                            <option value="TAMBULERO">TAMBULERO</option>
+                            <option value="TIBURON">TIBURON</option>
+                            <option value="TUNA">TUNA</option>
+                            <option value="WAHOO">WAHOO</option>
+                          </select>
                         </div>
                       </div>
                     </div>
@@ -1309,20 +1363,25 @@ const RegistroData: React.FC<RegistroDataProps> = ({ role }) => {
                       </div>
                       <div className="space-y-1.5">
                         <label className="text-[10px] font-mono text-cofimar-text-muted uppercase block">Proveedor Balanceado</label>
-                        <input
-                          type="text"
+                        <select
                           value={cycleForm.feed_supplier}
                           onChange={(e) => setCycleForm({ ...cycleForm, feed_supplier: e.target.value })}
-                          className="w-full bg-cofimar-surface-secondary border border-cofimar-border rounded-lg px-4.5 py-2.5 font-mono text-sm text-cofimar-surface-active-text focus:outline-none"
-                          placeholder="Ej: SK, NC, CG"
-                        />
+                          className="w-full bg-cofimar-bg/50 border border-cofimar-border rounded-lg px-4.5 py-2.5 font-mono text-sm text-cofimar-text focus:outline-none focus:border-cofimar-primary focus:ring-1 focus:ring-cofimar-primary/30 transition-all duration-200"
+                        >
+                          <option value="">PROVEEDOR...</option>
+                          <option value="SK">SK (Skretting)</option>
+                          <option value="NC">NC (Nicovita)</option>
+                          <option value="CG">CG (Cargill)</option>
+                          <option value="VP">VP (Vitapro)</option>
+                          <option value="AL">AL (Alicorp)</option>
+                        </select>
                       </div>
                       <div className="space-y-1.5">
                         <label className="text-[10px] font-mono text-cofimar-text-muted uppercase block">Modo Alimentación</label>
                         <select
                           value={cycleForm.feeding_mode}
                           onChange={(e) => setCycleForm({ ...cycleForm, feeding_mode: e.target.value })}
-                          className="w-full bg-cofimar-surface-secondary border border-cofimar-border rounded-lg px-4.5 py-2.5 font-mono text-sm text-cofimar-surface-active-text focus:outline-none"
+                          className="w-full bg-cofimar-bg/50 border border-cofimar-border rounded-lg px-4.5 py-2.5 font-mono text-sm text-cofimar-text focus:outline-none focus:border-cofimar-primary focus:ring-1 focus:ring-cofimar-primary/30 transition-all duration-200"
                         >
                           <option value="AUTOMATICA">AUTOMÁTICA</option>
                           <option value="BOLEO">BOLEO (Manual)</option>
