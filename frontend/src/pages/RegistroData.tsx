@@ -1086,7 +1086,29 @@ const RegistroData: React.FC<RegistroDataProps> = ({ role }) => {
                           type="date"
                           required
                           value={cycleForm.harvest_date}
-                          onChange={(e) => setCycleForm({ ...cycleForm, harvest_date: e.target.value })}
+                          onChange={(e) => {
+                            const dateStr = e.target.value;
+                            if (dateStr) {
+                              const dateParts = dateStr.split('-');
+                              if (dateParts.length === 3) {
+                                const parsedYear = parseInt(dateParts[0], 10);
+                                const monthIdx = parseInt(dateParts[1], 10) - 1;
+                                const monthsList = [
+                                  'ENERO', 'FEBRERO', 'MARZO', 'ABRIL', 'MAYO', 'JUNIO',
+                                  'JULIO', 'AGOSTO', 'SEPTIEMBRE', 'OCTUBRE', 'NOVIEMBRE', 'DICIEMBRE'
+                                ];
+                                const parsedMonth = monthsList[monthIdx] || '';
+                                setCycleForm({
+                                  ...cycleForm,
+                                  harvest_date: dateStr,
+                                  year: parsedYear,
+                                  month: parsedMonth
+                                });
+                                return;
+                              }
+                            }
+                            setCycleForm({ ...cycleForm, harvest_date: dateStr });
+                          }}
                           className="w-full bg-cofimar-bg/50 border border-cofimar-border rounded-lg px-4.5 py-2.5 font-mono text-sm text-cofimar-text focus:outline-none focus:border-cofimar-primary focus:ring-1 focus:ring-cofimar-primary/30 transition-all duration-200"
                         />
                       </div>
