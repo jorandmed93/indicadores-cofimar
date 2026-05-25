@@ -7,7 +7,7 @@ RUN npm ci
 
 COPY . .
 
-# Build the production bundle (VITE_API_URL is injected at build time via Railway env vars)
+# VITE_API_URL is injected at build time via Railway env vars
 ARG VITE_API_URL
 ENV VITE_API_URL=$VITE_API_URL
 RUN npm run build
@@ -23,5 +23,5 @@ COPY --from=builder /app/dist ./dist
 
 EXPOSE 3000
 
-# Use shell form so $PORT is expanded at runtime by Railway
+# Shell form so Railway's $PORT env var is expanded at runtime
 CMD serve -s dist -l ${PORT:-3000}

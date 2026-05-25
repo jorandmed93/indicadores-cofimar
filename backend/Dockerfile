@@ -14,11 +14,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 RUN mkdir -p /app/backend
 COPY . /app/backend/
 
-# Copy the Excel data file if present (for initial seeding)
-# The seed file lives at the repo root, but with Root Directory=/backend
-# it won't be in the build context. We handle this gracefully in main.py.
-
 EXPOSE 8000
 
-# Use shell form so $PORT is expanded at runtime
+# Shell form so Railway's $PORT env var is expanded at runtime
 CMD uvicorn backend.main:app --host 0.0.0.0 --port ${PORT:-8000}
