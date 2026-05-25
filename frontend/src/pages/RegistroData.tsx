@@ -63,7 +63,10 @@ const RegistroData: React.FC<RegistroDataProps> = ({ role }) => {
     gr_farm: 0,
     gr_plant: 0,
     sector_chief: '',
-    certification: 'ASC'
+    certification: 'ASC',
+    feed_lbs: 0,
+    feed_supplier: '',
+    feeding_mode: 'AUTOMATICA'
   });
 
   const [seedingForm, setSeedingForm] = useState({
@@ -199,7 +202,10 @@ const RegistroData: React.FC<RegistroDataProps> = ({ role }) => {
       gr_farm: 0,
       gr_plant: 0,
       sector_chief: '',
-      certification: 'ASC'
+      certification: 'ASC',
+      feed_lbs: 0,
+      feed_supplier: '',
+      feeding_mode: 'AUTOMATICA'
     });
     setSeedingForm({
       pond_code: allPondsCatalog[0]?.code || '',
@@ -272,7 +278,10 @@ const RegistroData: React.FC<RegistroDataProps> = ({ role }) => {
         gr_farm: parseFloat(item.gr_farm || 0),
         gr_plant: parseFloat(item.gr_plant || 0),
         sector_chief: item.sector_chief || '',
-        certification: item.certification || 'ASC'
+        certification: item.certification || 'ASC',
+        feed_lbs: parseFloat(item.feed_lbs || 0),
+        feed_supplier: item.feed_supplier || '',
+        feeding_mode: item.feeding_mode || 'AUTOMATICA'
       });
     } else if (activeTab === 'seedings') {
       setSelectedId(item.id);
@@ -922,6 +931,46 @@ const RegistroData: React.FC<RegistroDataProps> = ({ role }) => {
                       <option value="CONVENCIONAL">CONVENCIONAL</option>
                     </select>
                   </div>
+
+                  {harvestForm.activity === 'PESCA' && (
+                    <>
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] font-mono text-cofimar-text-muted uppercase block">Alimento Consumido en el Ciclo (Lbs) *</label>
+                        <input
+                          type="number"
+                          required
+                          value={harvestForm.feed_lbs}
+                          onChange={(e) => setHarvestForm({ ...harvestForm, feed_lbs: parseFloat(e.target.value) })}
+                          className="w-full bg-cofimar-bg/50 border border-cofimar-border rounded-lg px-4 py-2.5 font-mono text-sm text-cofimar-text focus:outline-none focus:border-cofimar-primary focus:ring-1 focus:ring-cofimar-primary/30 transition-all duration-200"
+                          placeholder="Para cálculo de FCA"
+                        />
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] font-mono text-cofimar-text-muted uppercase block">Proveedor de Balanceado</label>
+                        <input
+                          type="text"
+                          value={harvestForm.feed_supplier}
+                          onChange={(e) => setHarvestForm({ ...harvestForm, feed_supplier: e.target.value.toUpperCase() })}
+                          className="w-full bg-cofimar-bg/50 border border-cofimar-border rounded-lg px-4 py-2.5 font-mono text-sm text-cofimar-text focus:outline-none focus:border-cofimar-primary focus:ring-1 focus:ring-cofimar-primary/30 transition-all duration-200"
+                          placeholder="Ej: SKRETTING, VITAPRO"
+                        />
+                      </div>
+
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] font-mono text-cofimar-text-muted uppercase block">Modo de Alimentación</label>
+                        <select
+                          value={harvestForm.feeding_mode}
+                          onChange={(e) => setHarvestForm({ ...harvestForm, feeding_mode: e.target.value })}
+                          className="w-full bg-cofimar-bg/50 border border-cofimar-border rounded-lg px-4 py-2.5 font-mono text-sm text-cofimar-text focus:outline-none focus:border-cofimar-primary focus:ring-1 focus:ring-cofimar-primary/30 transition-all duration-200"
+                        >
+                          <option value="AUTOMATICA">AUTOMÁTICA</option>
+                          <option value="MANUAL">MANUAL</option>
+                          <option value="MIXTA">MIXTA</option>
+                        </select>
+                      </div>
+                    </>
+                  )}
                 </div>
               )}
 

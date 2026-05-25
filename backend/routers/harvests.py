@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, Query, HTTPException, status
 from sqlalchemy.orm import Session
 from sqlalchemy import desc, asc
 from typing import Optional, List
@@ -73,6 +73,9 @@ from ..schemas import HarvestCreate, Harvest as HarvestSchema
 
 @router.post("", response_model=HarvestSchema)
 def create_harvest(harvest_in: HarvestCreate, db: Session = Depends(get_db)):
+    from ..models import Cycle, Pond
+    from ..services.kpi_calculator import calc_kpis
+    
     db_harvest = Harvest(**harvest_in.dict())
     
     # Calculate month and sector if not provided
@@ -85,9 +88,78 @@ def create_harvest(harvest_in: HarvestCreate, db: Session = Depends(get_db)):
         months = ["ENERO", "FEBRERO", "MARZO", "ABRIL", "MAYO", "JUNIO", "JULIO", "AGOSTO", "SEPTIEMBRE", "OCTUBRE", "NOVIEMBRE", "DICIEMBRE"]
         db_harvest.month = months[db_harvest.harvest_date.month - 1]
         
+    # Check if there is an active (open) cycle for this pool
+    active_cycle = db.query(Cycle).filter(
+        Cycle.pond_code == db_harvest.pond_code,
+        Cycle.is_closed == False
+    ).first()
+    
+    if not active_cycle:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"No hay un ciclo de siembra activo abierto para la piscina {db_harvest.pond_code}. Debe registrar la siembra primero."
+        )
+        
+    # Calculate animals dynamically if gr_plant is provided and > 0
+    if db_harvest.gr_plant and db_harvest.gr_plant > 0:
+        db_harvest.animals = (float(db_harvest.lbs_plant or 0) * 454.0) / float(db_harvest.gr_plant)
+        
     db.add(db_harvest)
     db.commit()
     db.refresh(db_harvest)
+    
+    # Update active cycle fields based on activity type
+    if db_harvest.activity == "RALEO":
+        # Sum all raleos registered under this active cycle
+        raleos = db.query(Harvest).filter(
+            Harvest.pond_code == active_cycle.pond_code,
+            Harvest.harvest_date >= active_cycle.seeding_date,
+            Harvest.harvest_date <= db_harvest.harvest_date,
+            Harvest.activity == "RALEO"
+        ).all()
+        
+        lbs_trawl_farm = sum(float(r.lbs_farm or 0) for r in raleos)
+        lbs_trawl_plant = sum(float(r.lbs_plant or 0) for r in raleos)
+        animals_trawl = sum(float(r.animals or 0) for r in raleos)
+        
+        gr_farm_list = [float(r.gr_farm or 0) for r in raleos if (r.gr_farm or 0) > 0]
+        gr_plant_list = [float(r.gr_plant or 0) for r in raleos if (r.gr_plant or 0) > 0]
+        
+        gr_trawl_farm = sum(gr_farm_list) / len(gr_farm_list) if len(gr_farm_list) > 0 else 0.0
+        gr_trawl_plant = sum(gr_plant_list) / len(gr_plant_list) if len(gr_plant_list) > 0 else 0.0
+        
+        active_cycle.lbs_trawl_farm = lbs_trawl_farm
+        active_cycle.lbs_trawl_plant = lbs_trawl_plant
+        active_cycle.gr_trawl_farm = gr_trawl_farm
+        active_cycle.gr_trawl_plant = gr_trawl_plant
+        active_cycle.lbs_ha_trawl = lbs_trawl_plant / float(active_cycle.hectares or 1.0)
+        active_cycle.animals_trawl = animals_trawl
+        db.commit()
+        
+    elif db_harvest.activity == "PESCA":
+        # Closing the active cycle!
+        active_cycle.harvest_date = db_harvest.harvest_date
+        if active_cycle.seeding_date and db_harvest.harvest_date:
+            active_cycle.days = (db_harvest.harvest_date - active_cycle.seeding_date).days
+            
+        active_cycle.year = db_harvest.harvest_date.year
+        active_cycle.month = db_harvest.month
+        active_cycle.lbs_harvest_farm = db_harvest.lbs_farm
+        active_cycle.lbs_harvest_plant = db_harvest.lbs_plant
+        active_cycle.gr_harvest_farm = db_harvest.gr_farm
+        active_cycle.gr_harvest_plant = db_harvest.gr_plant
+        active_cycle.lbs_ha_harvest = float(db_harvest.lbs_plant or 0) / float(active_cycle.hectares or 1.0)
+        active_cycle.animals_harvest = db_harvest.animals
+        
+        # Pull feed from harvest inputs to close the loop
+        active_cycle.feed_lbs = db_harvest.feed_lbs or 0.0
+        active_cycle.feed_supplier = db_harvest.feed_supplier
+        active_cycle.feeding_mode = db_harvest.feeding_mode or "AUTOMATICA"
+        active_cycle.is_closed = True # CLOSE CYCLE
+        
+        calc_kpis(active_cycle)
+        db.commit()
+        
     return db_harvest
 
 @router.put("/{id}", response_model=HarvestSchema)

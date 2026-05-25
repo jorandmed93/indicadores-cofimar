@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Date, Numeric, DateTime, ForeignKey, func
+from sqlalchemy import Column, Integer, String, Date, Numeric, DateTime, ForeignKey, func, Boolean
 from .database import Base
 
 class Pond(Base):
@@ -13,7 +13,7 @@ class Cycle(Base):
     __tablename__ = "cycles"
 
     id = Column(Integer, primary_key=True, index=True)
-    harvest_date = Column(Date, nullable=False)
+    harvest_date = Column(Date, nullable=True)
     year = Column(Integer, nullable=True)
     aguaje = Column(String(20), nullable=True)
     month = Column(String(20), nullable=True)
@@ -71,6 +71,7 @@ class Cycle(Base):
 
     # Responsable
     sector_chief = Column(String(100), nullable=True)
+    is_closed = Column(Boolean, default=True, nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
 class Harvest(Base):
@@ -90,6 +91,11 @@ class Harvest(Base):
     gr_plant = Column(Numeric(8, 3), nullable=True)
     month = Column(String(20), nullable=True)
     certification = Column(String(30), nullable=True)
+    
+    # Alimentación para pesca final y cálculo de FCA
+    feed_lbs = Column(Numeric(14, 2), nullable=True)
+    feed_supplier = Column(String(30), nullable=True)
+    feeding_mode = Column(String(20), nullable=True)
 
 class Seeding(Base):
     __tablename__ = "seedings"

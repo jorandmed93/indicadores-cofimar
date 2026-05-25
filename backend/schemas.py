@@ -32,6 +32,9 @@ class HarvestBase(BaseModel):
     gr_plant: Optional[Decimal] = None
     month: Optional[str] = None
     certification: Optional[str] = None
+    feed_lbs: Optional[Decimal] = None
+    feed_supplier: Optional[str] = None
+    feeding_mode: Optional[str] = None
 
 class HarvestCreate(HarvestBase):
     pass
@@ -65,11 +68,12 @@ class Seeding(SeedingBase):
 
 # Cycles
 class CycleBase(BaseModel):
-    harvest_date: date
+    harvest_date: Optional[date] = None
     year: Optional[int] = None
     aguaje: Optional[str] = None
     month: Optional[str] = None
     pond_code: str
+    is_closed: Optional[bool] = True
     pond_name: Optional[str] = None
     sector: Optional[str] = None
     hectares: Optional[Decimal] = None

@@ -23,10 +23,61 @@ def get_seedings(
 
 @router.post("", response_model=SeedingSchema)
 def create_seeding(seeding_in: SeedingCreate, db: Session = Depends(get_db)):
+    from ..models import Cycle, Pond
+    # 1. Check if there's already an active (open) cycle for this pool
+    active_cycle = db.query(Cycle).filter(
+        Cycle.pond_code == seeding_in.pond_code,
+        Cycle.is_closed == False
+    ).first()
+    
+    if active_cycle:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"La piscina {seeding_in.pond_code} ya tiene un ciclo activo abierto. Debe registrar la pesca final para cerrar el ciclo actual antes de sembrar de nuevo."
+        )
+        
     db_seeding = Seeding(**seeding_in.dict())
     db.add(db_seeding)
     db.commit()
     db.refresh(db_seeding)
+    
+    # 2. Initialize a new open cycle for this pool
+    # Retrieve pool information for automatic mapping
+    pond = db.query(Pond).filter(Pond.code == seeding_in.pond_code).first()
+    hectares = pond.hectares if pond else None
+    sector = pond.sector if pond else None
+    certification = pond.certification if pond else None
+    pond_name = seeding_in.pond_code.split(" ")[1] if " " in seeding_in.pond_code else seeding_in.pond_code
+    
+    sector_chief = None
+    if sector:
+        sector_chiefs_map = {
+            'DORADO': 'DAVID SANCHEZ',
+            'TUNA': 'GUSTAVO CARRASCO',
+            'COCORA': 'JEFE COCORA',
+            'MARIA': 'JEFE MARIA',
+            'CHUPADORES': 'JEFE CHUPADORES',
+            'SOLEDAD': 'JEFE SOLEDAD'
+        }
+        sector_chief = sector_chiefs_map.get(sector.upper())
+    db_cycle = Cycle(
+        pond_code=seeding_in.pond_code,
+        pond_name=pond_name,
+        sector=sector,
+        hectares=hectares,
+        certification=certification,
+        seeding_date=seeding_in.seeding_date,
+        animals_seeded=seeding_in.animals,
+        seeding_weight=seeding_in.weight_gr,
+        laboratory=seeding_in.laboratory,
+        nauplio=seeding_in.nauplio,
+        aguaje=seeding_in.aguaje,
+        is_closed=False,
+        sector_chief=sector_chief
+    )
+    db.add(db_cycle)
+    db.commit()
+    
     return db_seeding
 
 @router.put("/{id}", response_model=SeedingSchema)
