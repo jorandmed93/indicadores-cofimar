@@ -181,6 +181,32 @@ try:
         print(f"Self-healing: Reconstruidos {reconstructed_count} ciclos de acuicultura faltantes desde Siembras.")
     else:
         print("Autocuración de ciclos: Todos los registros de siembra tienen su ciclo correspondiente.")
+        
+    # Database cleanup: delete duplicate active cycles (is_closed == False), keeping only the newest one per pool
+    cleanup_count = 0
+    try:
+        active_cycles = db.query(Cycle).filter(Cycle.is_closed == False).all()
+        by_pond = {}
+        for c in active_cycles:
+            if c.pond_code not in by_pond:
+                by_pond[c.pond_code] = []
+            by_pond[c.pond_code].append(c)
+            
+        for p_code, cycles_list in by_pond.items():
+            if len(cycles_list) > 1:
+                # Sort cycles by ID descending (newest first)
+                cycles_list.sort(key=lambda x: x.id, reverse=True)
+                to_delete = cycles_list[1:]
+                for c_del in to_delete:
+                    db.delete(c_del)
+                    cleanup_count += 1
+        if cleanup_count > 0:
+            db.commit()
+            print(f"Cleanup: Eliminados {cleanup_count} ciclos duplicados activos sin usar.")
+    except Exception as ex:
+        print("Error during active cycles cleanup startup:", ex)
+        db.rollback()
+        
     db.close()
 except Exception as e:
     print(f"Error al ejecutar autocuración de ciclos: {e}")

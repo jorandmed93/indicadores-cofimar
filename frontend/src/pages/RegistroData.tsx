@@ -260,6 +260,28 @@ const RegistroData: React.FC<RegistroDataProps> = ({ role }) => {
     setIsModalOpen(true);
   };
 
+  const handleRegisterHarvestForCycle = (pondCode: string) => {
+    setEditMode(false);
+    setSelectedId(null);
+    setError(null);
+    setHarvestForm({
+      pond_code: pondCode,
+      activity: 'RALEO',
+      harvest_date: new Date().toISOString().split('T')[0],
+      lbs_farm: 0,
+      lbs_plant: 0,
+      gr_farm: 0,
+      gr_plant: 0,
+      sector_chief: '',
+      certification: 'ASC',
+      feed_lbs: 0,
+      feed_supplier: '',
+      feeding_mode: 'AUTOMATICA'
+    });
+    setActiveTab('harvests');
+    setIsModalOpen(true);
+  };
+
   const handleOpenEdit = (item: any) => {
     setEditMode(true);
     setError(null);
@@ -646,6 +668,7 @@ const RegistroData: React.FC<RegistroDataProps> = ({ role }) => {
                     <th className="py-4 px-5 text-right">LARVAS SEMBRADAS</th>
                     <th className="py-4 px-5">LABORATORIO</th>
                     <th className="py-4 px-5">NAUPLIO</th>
+                    <th className="py-4 px-5">PRE-CRIADERO</th>
                     <th className="py-4 px-5 text-right">DÍAS SECOS</th>
                     <th className="py-4 px-5 text-right">SOBREVIVENCIA (%)</th>
                     {role === 'admin' && <th className="py-4 px-5 text-center">ACCIONES</th>}
@@ -654,7 +677,7 @@ const RegistroData: React.FC<RegistroDataProps> = ({ role }) => {
                 <tbody className="divide-y divide-cofimar-border/25 font-mono text-xs">
                   {seedings.length === 0 ? (
                     <tr>
-                      <td colSpan={role === 'admin' ? 9 : 8} className="py-12 text-center text-cofimar-text-muted">No hay siembras registradas.</td>
+                      <td colSpan={role === 'admin' ? 10 : 9} className="py-12 text-center text-cofimar-text-muted">No hay siembras registradas.</td>
                     </tr>
                   ) : (
                     seedings.map((s, idx) => (
@@ -665,6 +688,7 @@ const RegistroData: React.FC<RegistroDataProps> = ({ role }) => {
                         <td className="py-3 px-5 text-right text-cofimar-text font-mono">{(s.animals || 0).toLocaleString()}</td>
                         <td className="py-3 px-5 text-cofimar-text-muted font-sans">{s.laboratory || 'N/A'}</td>
                         <td className="py-3 px-5 text-cofimar-text-muted font-sans">{s.nauplio || 'N/A'}</td>
+                        <td className="py-3 px-5 text-cofimar-text-muted font-sans">{s.pre_criadero || 'N/A'}</td>
                         <td className="py-3 px-5 text-right text-cofimar-text font-mono">{s.dry_days || 0}</td>
                         <td className="py-3 px-5 text-right font-bold text-cofimar-accent font-mono">{parseFloat(s.survival_pct || 0).toFixed(2)}%</td>
                         {role === 'admin' && (
@@ -737,6 +761,16 @@ const RegistroData: React.FC<RegistroDataProps> = ({ role }) => {
                         </td>
                         {role === 'admin' && (
                           <td className="py-3 px-5 text-center space-x-2">
+                            {activeTab === 'cycles' && (
+                              <button
+                                onClick={() => handleRegisterHarvestForCycle(c.pond_code)}
+                                className="bg-cofimar-success/15 hover:bg-cofimar-success text-cofimar-success hover:text-cofimar-bg px-2.5 py-1.5 rounded-lg border border-cofimar-success/30 text-[10px] font-mono font-bold transition inline-flex items-center gap-1.5"
+                                title="Registrar Pesca / Raleo"
+                              >
+                                <Fish className="w-3.5 h-3.5" />
+                                <span>COSECHAR</span>
+                              </button>
+                            )}
                             <button
                               onClick={() => handleOpenEdit(c)}
                               className="bg-cofimar-surface-secondary hover:bg-cofimar-surface-hover text-cofimar-primary p-1.5 rounded-lg border border-cofimar-border transition"
@@ -1112,6 +1146,17 @@ const RegistroData: React.FC<RegistroDataProps> = ({ role }) => {
                   </div>
 
                   <div className="space-y-1.5">
+                    <label className="text-[10px] font-mono text-cofimar-text-muted uppercase block">Pre-Criadero</label>
+                    <input
+                      type="text"
+                      value={seedingForm.pre_criadero}
+                      onChange={(e) => setSeedingForm({ ...seedingForm, pre_criadero: e.target.value.toUpperCase() })}
+                      className="w-full bg-cofimar-bg/50 border border-cofimar-border rounded-lg px-4 py-2.5 font-mono text-sm text-cofimar-text focus:outline-none focus:border-cofimar-primary focus:ring-1 focus:ring-cofimar-primary/30 transition-all duration-200"
+                      placeholder="Ej: PRE-CRIADERO A"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
                     <label className="text-[10px] font-mono text-cofimar-text-muted uppercase block">Peso Inicial (Gramaje W) *</label>
                     <input
                       type="number"
@@ -1137,7 +1182,7 @@ const RegistroData: React.FC<RegistroDataProps> = ({ role }) => {
               )}
 
               {/* --- CYCLES FORM --- */}
-              {activeTab === 'cycles' && (
+              {(activeTab === 'cycles' || activeTab === 'closed_cycles') && (
                 <div className="space-y-6">
                   {/* Sección 1: Datos Generales */}
                   <div>
