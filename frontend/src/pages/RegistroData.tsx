@@ -198,16 +198,21 @@ const RegistroData: React.FC<RegistroDataProps> = ({ role }) => {
     
     // Reset forms
     setPondForm({ code: '', sector: '', hectares: 0, certification: 'ASC', sector_chief: '' });
+    const firstPond = allPondsCatalog[0];
+    const initialCode = firstPond?.code || '';
+    const initialChief = firstPond?.sector_chief || (firstPond?.sector ? SECTOR_CHIEFS[firstPond.sector.toUpperCase()] : '') || '';
+    const initialCert = firstPond?.certification || 'ASC';
+
     setHarvestForm({
-      pond_code: allPondsCatalog[0]?.code || '',
+      pond_code: initialCode,
       activity: 'PESCA',
       harvest_date: new Date().toISOString().split('T')[0],
       lbs_farm: 0,
       lbs_plant: 0,
       gr_farm: 0,
       gr_plant: 0,
-      sector_chief: '',
-      certification: 'ASC',
+      sector_chief: initialChief,
+      certification: initialCert,
       feed_lbs: 0,
       feed_supplier: '',
       feeding_mode: 'AUTOMATICA'
@@ -585,7 +590,7 @@ const RegistroData: React.FC<RegistroDataProps> = ({ role }) => {
                             {p.certification || 'CONVENCIONAL'}
                           </span>
                         </td>
-                        <td className="py-3 px-6 text-cofimar-text font-mono font-medium">{p.sector_chief || 'N/A'}</td>
+                        <td className="py-3 px-6 text-cofimar-text font-mono font-medium">{p.sector_chief || (p.sector ? SECTOR_CHIEFS[p.sector.toUpperCase()] : '') || 'N/A'}</td>
                         {role === 'admin' && (
                           <td className="py-3 px-6 whitespace-nowrap w-[100px]">
                             <div className="flex items-center justify-center gap-2">

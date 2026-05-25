@@ -9,7 +9,34 @@ router = APIRouter(prefix="/ponds", tags=["Ponds"])
 
 @router.get("", response_model=List[PondSchema])
 def get_ponds(db: Session = Depends(get_db)):
-    return db.query(Pond).all()
+    ponds = db.query(Pond).all()
+    sector_chiefs_map = {
+        'BARRACUDA': 'GUSTAVO CARRASCO',
+        'CATANUDA': 'VICTOR QUINTANA',
+        'CHERNA': 'SANTIAGO OBRIEN',
+        'DELFIN': 'RONNIE REYES',
+        'DORADO': 'JOSE CEDEÑO',
+        'GUATO': 'JULIO SANTOS',
+        'MANTARRAYA': 'GUSTAVO CARRASCO',
+        'MERO': 'RONNIE REYES',
+        'PAMPANO': 'GUSTAVO CARRASCO',
+        'PARGO ROJO': 'WILMER TORRES',
+        'ROBALO': 'VICTOR QUINTANA',
+        'TAMBULERO': 'ALFONSO GRUNAUER',
+        'TIBURON': 'ALFONSO GRUNAUER',
+        'TUNA': 'GUSTAVO CARRASCO',
+        'WAHOO': 'JUNIOR ESQUIVEL',
+        'COCORA': 'JEFE COCORA',
+        'MARIA': 'JEFE MARIA',
+        'CHUPADORES': 'JEFE CHUPADORES',
+        'SOLEDAD': 'JEFE SOLEDAD'
+    }
+    for p in ponds:
+        if not p.sector_chief:
+            sec = (p.sector or '').upper().strip()
+            if sec in sector_chiefs_map:
+                p.sector_chief = sector_chiefs_map[sec]
+    return ponds
 
 @router.post("", response_model=PondSchema)
 def create_pond(pond_in: PondCreate, db: Session = Depends(get_db)):
