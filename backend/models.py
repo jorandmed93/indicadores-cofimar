@@ -112,3 +112,4 @@ class Seeding(Base):
     survival_pct = Column(Numeric(8, 4), nullable=True)
     pre_criadero = Column(String(50), nullable=True)
     weight_gr = Column(Numeric(8, 3), nullable=True)
+    dry_days = Column(Integer, nullable=True)

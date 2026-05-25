@@ -80,7 +80,8 @@ const RegistroData: React.FC<RegistroDataProps> = ({ role }) => {
     laboratory: '',
     survival_pct: 0,
     pre_criadero: '',
-    weight_gr: 0.05
+    weight_gr: 0.05,
+    dry_days: 0
   });
 
   const [cycleForm, setCycleForm] = useState({
@@ -221,7 +222,8 @@ const RegistroData: React.FC<RegistroDataProps> = ({ role }) => {
       laboratory: '',
       survival_pct: 0,
       pre_criadero: '',
-      weight_gr: 0.05
+      weight_gr: 0.05,
+      dry_days: 0
     });
     setCycleForm({
       harvest_date: new Date().toISOString().split('T')[0],
@@ -299,7 +301,8 @@ const RegistroData: React.FC<RegistroDataProps> = ({ role }) => {
         laboratory: item.laboratory || '',
         survival_pct: parseFloat(item.survival_pct || 0),
         pre_criadero: item.pre_criadero || '',
-        weight_gr: parseFloat(item.weight_gr || 0.05)
+        weight_gr: parseFloat(item.weight_gr || 0.05),
+        dry_days: parseInt(item.dry_days || 0)
       });
     } else if (activeTab === 'cycles' || activeTab === 'closed_cycles') {
       setSelectedId(item.id);
@@ -643,6 +646,7 @@ const RegistroData: React.FC<RegistroDataProps> = ({ role }) => {
                     <th className="py-4 px-5 text-right">LARVAS SEMBRADAS</th>
                     <th className="py-4 px-5">LABORATORIO</th>
                     <th className="py-4 px-5">NAUPLIO</th>
+                    <th className="py-4 px-5 text-right">DÍAS SECOS</th>
                     <th className="py-4 px-5 text-right">SOBREVIVENCIA (%)</th>
                     {role === 'admin' && <th className="py-4 px-5 text-center">ACCIONES</th>}
                   </tr>
@@ -650,7 +654,7 @@ const RegistroData: React.FC<RegistroDataProps> = ({ role }) => {
                 <tbody className="divide-y divide-cofimar-border/25 font-mono text-xs">
                   {seedings.length === 0 ? (
                     <tr>
-                      <td colSpan={role === 'admin' ? 8 : 7} className="py-12 text-center text-cofimar-text-muted">No hay siembras registradas.</td>
+                      <td colSpan={role === 'admin' ? 9 : 8} className="py-12 text-center text-cofimar-text-muted">No hay siembras registradas.</td>
                     </tr>
                   ) : (
                     seedings.map((s, idx) => (
@@ -661,6 +665,7 @@ const RegistroData: React.FC<RegistroDataProps> = ({ role }) => {
                         <td className="py-3 px-5 text-right text-cofimar-text font-mono">{(s.animals || 0).toLocaleString()}</td>
                         <td className="py-3 px-5 text-cofimar-text-muted font-sans">{s.laboratory || 'N/A'}</td>
                         <td className="py-3 px-5 text-cofimar-text-muted font-sans">{s.nauplio || 'N/A'}</td>
+                        <td className="py-3 px-5 text-right text-cofimar-text font-mono">{s.dry_days || 0}</td>
                         <td className="py-3 px-5 text-right font-bold text-cofimar-accent font-mono">{parseFloat(s.survival_pct || 0).toFixed(2)}%</td>
                         {role === 'admin' && (
                           <td className="py-3 px-5 text-center space-x-2">
@@ -1115,6 +1120,17 @@ const RegistroData: React.FC<RegistroDataProps> = ({ role }) => {
                       value={seedingForm.weight_gr}
                       onChange={(e) => setSeedingForm({ ...seedingForm, weight_gr: parseFloat(e.target.value) })}
                       className="w-full bg-cofimar-bg/50 border border-cofimar-border rounded-lg px-4 py-2.5 font-mono text-sm text-cofimar-text focus:outline-none focus:border-cofimar-primary focus:ring-1 focus:ring-cofimar-primary/30 transition-all duration-200"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-mono text-cofimar-text-muted uppercase block">Días Secos de Piscina</label>
+                    <input
+                      type="number"
+                      value={seedingForm.dry_days}
+                      onChange={(e) => setSeedingForm({ ...seedingForm, dry_days: parseInt(e.target.value) || 0 })}
+                      className="w-full bg-cofimar-bg/50 border border-cofimar-border rounded-lg px-4 py-2.5 font-mono text-sm text-cofimar-text focus:outline-none focus:border-cofimar-primary focus:ring-1 focus:ring-cofimar-primary/30 transition-all duration-200"
+                      placeholder="Ej: 15"
                     />
                   </div>
                 </div>

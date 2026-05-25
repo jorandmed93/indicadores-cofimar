@@ -22,6 +22,13 @@ try:
             conn.execute(text("ALTER TABLE harvests ADD COLUMN feed_supplier VARCHAR(30)"))
             conn.execute(text("ALTER TABLE harvests ADD COLUMN feeding_mode VARCHAR(20)"))
             
+    # Check seedings columns
+    seedings_cols = [col['name'] for col in inspector.get_columns('seedings')]
+    if 'dry_days' not in seedings_cols:
+        print("Migración: Agregando columna 'dry_days' a la tabla 'seedings'...")
+        with engine.begin() as conn:
+            conn.execute(text("ALTER TABLE seedings ADD COLUMN dry_days INTEGER DEFAULT 0"))
+
     # Check cycles columns
     cycles_cols = [col['name'] for col in inspector.get_columns('cycles')]
     if 'is_closed' not in cycles_cols:
@@ -139,6 +146,7 @@ try:
                 laboratory=s.laboratory,
                 nauplio=s.nauplio,
                 aguaje=s.aguaje,
+                dry_days=s.dry_days,
                 is_closed=is_closed,
                 harvest_date=harvest_date,
                 lbs_trawl_farm=lbs_trawl_farm,

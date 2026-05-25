@@ -57,6 +57,7 @@ class SeedingBase(BaseModel):
     survival_pct: Optional[Decimal] = None
     pre_criadero: Optional[str] = None
     weight_gr: Optional[Decimal] = None
+    dry_days: Optional[int] = None
 
 class SeedingCreate(SeedingBase):
     pass

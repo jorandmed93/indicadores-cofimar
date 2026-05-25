@@ -72,6 +72,7 @@ def create_seeding(seeding_in: SeedingCreate, db: Session = Depends(get_db)):
         laboratory=seeding_in.laboratory,
         nauplio=seeding_in.nauplio,
         aguaje=seeding_in.aguaje,
+        dry_days=seeding_in.dry_days,
         is_closed=False,
         sector_chief=sector_chief
     )
