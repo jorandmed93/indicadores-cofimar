@@ -1,5 +1,6 @@
 import hashlib
 import os
+import hmac
 
 def hash_password(password: str) -> str:
     """Hash password using PBKDF2 with HMAC-SHA256 and a random salt."""
@@ -21,6 +22,7 @@ def verify_password(password: str, hashed_password: str) -> bool:
         actual_key = hashlib.pbkdf2_hmac('sha256', password.encode('utf-8'), salt, 100000)
         
         # Constant-time comparison to prevent timing attacks
-        return hashlib.compare_digest(actual_key, expected_key)
-    except Exception:
+        return hmac.compare_digest(actual_key, expected_key)
+    except Exception as e:
+        print(f"Error in verify_password: {e}")
         return False
