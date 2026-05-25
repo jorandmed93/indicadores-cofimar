@@ -1,12 +1,18 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import List
+from collections import defaultdict
+import time
 
 from ..database import get_db
 from ..models import User
 from ..schemas import User as UserSchema, UserCreate, UserUpdate, UserLogin
+from ..security import hash_password, verify_password
 
 router = APIRouter(prefix="/users", tags=["Users"])
+
+# In-memory brute-force protection rate limiter: username -> (attempts, lockout_until)
+FAILED_LOGIN_ATTEMPTS = defaultdict(lambda: {"attempts": 0, "lockout_until": 0.0})
 
 @router.get("", response_model=List[UserSchema])
 def get_users(db: Session = Depends(get_db)):
@@ -23,7 +29,7 @@ def create_user(user_in: UserCreate, db: Session = Depends(get_db)):
         )
     db_user = User(
         username=user_in.username,
-        password=user_in.password,
+        password=hash_password(user_in.password),
         role=user_in.role
     )
     db.add(db_user)
@@ -41,7 +47,10 @@ def update_user(user_id: int, user_in: UserUpdate, db: Session = Depends(get_db)
         )
     for k, v in user_in.dict(exclude_unset=True).items():
         if v is not None:
-            setattr(db_user, k, v)
+            if k == 'password':
+                setattr(db_user, k, hash_password(v))
+            else:
+                setattr(db_user, k, v)
     db.commit()
     db.refresh(db_user)
     return db_user
@@ -70,23 +79,55 @@ def delete_user(user_id: int, db: Session = Depends(get_db)):
 
 @router.post("/login")
 def login_user(login_in: UserLogin, db: Session = Depends(get_db)):
-    user = db.query(User).filter(
-        User.username == login_in.username,
-        User.password == login_in.password
-    ).first()
+    now = time.time()
+    username = login_in.username.strip().lower()
     
-    # Fallback to standard hardcoded credentials if the table fails or is empty, to prevent locked out users!
-    if not user:
-        u_clean = login_in.username.strip().lower()
-        p_clean = login_in.password.strip()
-        if (u_clean == 'admin' or u_clean == 'administrador') and (p_clean == 'admin' or p_clean == 'admin2026'):
-            return {"username": login_in.username, "role": "admin"}
-        elif (u_clean == 'lector' or u_clean == 'visitante') and (p_clean == 'lector' or p_clean == 'lector2026'):
-            return {"username": login_in.username, "role": "viewer"}
-        
+    # 1. Rate Limiting / Brute-force Lockout check
+    state = FAILED_LOGIN_ATTEMPTS[username]
+    if state["lockout_until"] > now:
+        time_left = int(state["lockout_until"] - now)
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Usuario o contraseña incorrectos."
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail=f"Cuenta bloqueada temporalmente por exceso de intentos fallidos. Intente de nuevo en {time_left} segundos."
         )
         
-    return {"username": user.username, "role": user.role}
+    # 2. Database query for the user
+    user = db.query(User).filter(User.username == login_in.username).first()
+    
+    # 3. Handle user verification (secure hash or clean fallback)
+    success = False
+    role = "viewer"
+    
+    if user:
+        if verify_password(login_in.password, user.password):
+            success = True
+            role = user.role
+    else:
+        # Fallback to standard hardcoded credentials to prevent lockouts during setup
+        p_clean = login_in.password.strip()
+        if (username == 'admin' or username == 'administrador') and (p_clean == 'admin' or p_clean == 'admin2026'):
+            success = True
+            role = "admin"
+        elif (username == 'lector' or username == 'visitante') and (p_clean == 'lector' or p_clean == 'lector2026'):
+            success = True
+            role = "viewer"
+
+    if not success:
+        # Increment failed attempts
+        state["attempts"] += 1
+        if state["attempts"] >= 5:
+            state["lockout_until"] = now + 60.0  # 60 seconds lockout
+            raise HTTPException(
+                status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                detail="Cuenta bloqueada temporalmente por 5 intentos fallidos consecutivos."
+            )
+        else:
+            attempts_left = 5 - state["attempts"]
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail=f"Usuario o contraseña incorrectos. Le quedan {attempts_left} intentos antes de bloquear la cuenta."
+            )
+            
+    # Reset attempts on successful login
+    FAILED_LOGIN_ATTEMPTS[username] = {"attempts": 0, "lockout_until": 0.0}
+    return {"username": login_in.username, "role": role}

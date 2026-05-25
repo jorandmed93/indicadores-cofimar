@@ -124,10 +124,11 @@ except Exception as e:
 try:
     db = SessionLocal()
     from .models import User
+    from .security import hash_password
     if db.query(User).count() == 0:
-        print("Migración: Creando usuarios administradores y lectores por defecto...")
-        admin = User(username="admin", password="admin", role="admin")
-        lector = User(username="lector", password="lector", role="viewer")
+        print("Migración: Creando usuarios administradores y lectores por defecto con contraseñas seguras...")
+        admin = User(username="admin", password=hash_password("admin"), role="admin")
+        lector = User(username="lector", password=hash_password("lector"), role="viewer")
         db.add(admin)
         db.add(lector)
         db.commit()
