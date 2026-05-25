@@ -131,23 +131,32 @@ input:-webkit-autofill:active {
 /* ==========================================
    HIGH-FIDELITY PRINT RULES FOR PDF REPORTS
    ========================================== */
+@page {
+  size: A4 landscape !important;
+  margin: 6mm 10mm 6mm 10mm !important;
+}
+
 @media print {
+  /* Global reset for crisp print quality */
   body, html {
     background: #FFFFFF !important;
     color: #000000 !important;
-    font-size: 11pt !important;
+    font-size: 10pt !important;
     width: 100% !important;
     margin: 0 !important;
     padding: 0 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
   
-  /* Hide UI wrapper layouts, sidebars, headers, search filters */
+  /* Hide sidebars, navigation bar, buttons, select, and filter boxes */
   aside, 
   header, 
   nav, 
   button, 
   select, 
   input, 
+  a,
   .flex-bg-switcher, 
   .theme-toggle, 
   .bell-badge,
@@ -155,45 +164,68 @@ input:-webkit-autofill:active {
     display: none !important;
   }
   
-  /* Expand main container to print margins */
+  /* Expand main container to fill landscape area fully */
   main, 
   .flex-1,
   .p-8,
-  .p-5 {
+  .p-5,
+  .space-y-7 {
     margin: 0 !important;
     padding: 0 !important;
     width: 100% !important;
     border: none !important;
     box-shadow: none !important;
     background: transparent !important;
+    gap: 15px !important;
   }
 
-  /* Force background styling & colored borders */
-  .glass-card, 
-  .bg-cofimar-surface-secondary, 
-  .bg-cofimar-surface,
-  .bg-cofimar-panel-bg,
-  .bg-cofimar-surface-active {
-    background-color: #F8F9FA !important;
-    border: 1px solid #DEE2E6 !important;
+  /* Force KPI Cards to align side-by-side in exactly 4 columns */
+  .grid-cols-1,
+  .md\:grid-cols-2,
+  .lg\:grid-cols-4 {
+    display: grid !important;
+    grid-template-columns: repeat(4, 1fr) !important;
+    gap: 15px !important;
+    width: 100% !important;
+  }
+
+  /* Force Recharts Charts to align side-by-side in exactly 2 columns */
+  .grid-cols-1.lg\:grid-cols-2,
+  .lg\:grid-cols-2,
+  .grid-cols-2 {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 18px !important;
+    width: 100% !important;
+  }
+
+  /* Clean background formatting for corporate glass-cards */
+  .glass-card {
+    background-color: #FAFAFC !important;
+    border: 1px solid #E5E5EA !important;
+    border-radius: 12px !important;
+    padding: 14px !important;
+    box-shadow: none !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
-    box-shadow: none !important;
   }
   
-  /* Charts formatting */
+  /* Charts high-fidelity formatting */
   .recharts-responsive-container {
     width: 100% !important;
-    height: 350px !important;
-  }
-
-  /* Force page breaks neatly */
-  tr, .glass-card {
-    page-break-inside: avoid !important;
+    height: 240px !important;
   }
   
+  /* Make typography clean and bold in prints */
   h1, h2, h3, h4, h5, h6 {
-    color: #000000 !important;
-    page-break-after: avoid !important;
+    color: #1C1C1E !important;
+    font-family: 'Space Grotesk', sans-serif !important;
+    letter-spacing: -0.01em !important;
+    margin-bottom: 5px !important;
+  }
+
+  /* Prevent elements from breaking halfway across landscape bounds */
+  tr, .glass-card {
+    page-break-inside: avoid !important;
   }
 }

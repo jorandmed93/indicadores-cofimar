@@ -249,24 +249,26 @@ const Dashboard: React.FC<DashboardProps> = ({ setActiveTab, setSelectedPondCode
       {activeView === 'standard' ? (
         <>
           {/* Global Filters */}
-          <Filters
-            years={years}
-            aguajes={aguajes}
-            months={months}
-            sectors={sectors}
-            certifications={certifications}
-            selectedYear={selectedYear}
-            setSelectedYear={setSelectedYear}
-            selectedAguaje={selectedAguaje}
-            setSelectedAguaje={setSelectedAguaje}
-            selectedMonth={selectedMonth}
-            setSelectedMonth={setSelectedMonth}
-            selectedSector={selectedSector}
-            setSelectedSector={setSelectedSector}
-            selectedCert={selectedCert}
-            setSelectedCert={setSelectedCert}
-            onReset={handleResetFilters}
-          />
+          <div className="no-print">
+            <Filters
+              years={years}
+              aguajes={aguajes}
+              months={months}
+              sectors={sectors}
+              certifications={certifications}
+              selectedYear={selectedYear}
+              setSelectedYear={setSelectedYear}
+              selectedAguaje={selectedAguaje}
+              setSelectedAguaje={setSelectedAguaje}
+              selectedMonth={selectedMonth}
+              setSelectedMonth={setSelectedMonth}
+              selectedSector={selectedSector}
+              setSelectedSector={setSelectedSector}
+              selectedCert={selectedCert}
+              setSelectedCert={setSelectedCert}
+              onReset={handleResetFilters}
+            />
+          </div>
 
           {loading ? (
             <div className="h-[400px] flex flex-col items-center justify-center space-y-4">
