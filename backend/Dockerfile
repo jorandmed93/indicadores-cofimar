@@ -4,14 +4,16 @@ WORKDIR /app
 
 RUN apt-get update && apt-get install -y \
     build-essential \
-        libpq-dev \
-            && rm -rf /var/lib/apt/lists/*
+    libpq-dev \
+    && rm -rf /var/lib/apt/lists/*
 
-            COPY requirements.txt .
-            RUN pip install --no-cache-dir -r requirements.txt
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
 
-            COPY . ./backend/
+# Create the backend package structure inside /app
+RUN mkdir -p /app/backend
+COPY . /app/backend/
 
-            EXPOSE 8000
+EXPOSE 8000
 
-            CMD ["uvicorn", "backend.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "backend.main:app", "--host", "0.0.0.0", "--port", "8000"]
