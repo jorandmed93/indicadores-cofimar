@@ -149,7 +149,7 @@ const RegistroData: React.FC<RegistroDataProps> = ({ role }) => {
         const res = await client.get('/harvests', { params: { limit: 100 } });
         setHarvests(res.data.data || []);
       } else if (activeTab === 'seedings') {
-        const res = await client.get('/seedings', { params: { is_closed: true } });
+        const res = await client.get('/seedings');
         setSeedings(res.data);
       } else if (activeTab === 'cycles') {
         const res = await client.get('/cycles', { params: { limit: 100, is_closed: false } });
@@ -677,13 +677,14 @@ const RegistroData: React.FC<RegistroDataProps> = ({ role }) => {
                     <th className="py-4 px-5">PRE-CRIADERO</th>
                     <th className="py-4 px-5 text-right">DÍAS SECOS</th>
                     <th className="py-4 px-5 text-right">SOBREVIVENCIA (%)</th>
+                    <th className="py-4 px-5 text-center">ESTADO</th>
                     {role === 'admin' && <th className="py-4 px-5 text-center">ACCIONES</th>}
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-cofimar-border/25 font-mono text-xs">
                   {seedings.length === 0 ? (
                     <tr>
-                      <td colSpan={role === 'admin' ? 10 : 9} className="py-12 text-center text-cofimar-text-muted">No hay siembras registradas.</td>
+                      <td colSpan={role === 'admin' ? 11 : 10} className="py-12 text-center text-cofimar-text-muted">No hay siembras registradas.</td>
                     </tr>
                   ) : (
                     seedings.map((s, idx) => (
@@ -697,6 +698,17 @@ const RegistroData: React.FC<RegistroDataProps> = ({ role }) => {
                         <td className="py-3 px-5 text-cofimar-text-muted font-sans">{s.pre_criadero || 'N/A'}</td>
                         <td className="py-3 px-5 text-right text-cofimar-text font-mono">{s.dry_days || 0}</td>
                         <td className="py-3 px-5 text-right font-bold text-cofimar-accent font-mono">{parseFloat(s.survival_pct || 0).toFixed(2)}%</td>
+                        <td className="py-3 px-5 text-center whitespace-nowrap">
+                          {s.is_closed ? (
+                            <span className="bg-cofimar-primary/10 border border-cofimar-primary/30 text-cofimar-primary text-[10px] px-2 py-0.5 rounded-lg font-bold font-mono">
+                              COSECHADA
+                            </span>
+                          ) : (
+                            <span className="bg-cofimar-success/10 border border-cofimar-success/30 text-cofimar-success text-[10px] px-2 py-0.5 rounded-lg font-bold font-mono animate-pulse">
+                              ACTIVA
+                            </span>
+                          )}
+                        </td>
                         {role === 'admin' && (
                           <td className="py-3 px-5 whitespace-nowrap w-[100px]">
                             <div className="flex items-center justify-center gap-2">
