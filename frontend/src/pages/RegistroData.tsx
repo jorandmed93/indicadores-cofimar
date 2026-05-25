@@ -28,7 +28,7 @@ interface RegistroDataProps {
 }
 
 const RegistroData: React.FC<RegistroDataProps> = ({ role }) => {
-  const [activeTab, setActiveTab] = useState<'ponds' | 'harvests' | 'seedings' | 'cycles'>('ponds');
+  const [activeTab, setActiveTab] = useState<'ponds' | 'seedings' | 'harvests' | 'cycles' | 'closed_cycles'>('ponds');
   
   // Data lists
   const [ponds, setPonds] = useState<any[]>([]);
@@ -151,7 +151,10 @@ const RegistroData: React.FC<RegistroDataProps> = ({ role }) => {
         const res = await client.get('/seedings');
         setSeedings(res.data);
       } else if (activeTab === 'cycles') {
-        const res = await client.get('/cycles', { params: { limit: 100 } });
+        const res = await client.get('/cycles', { params: { limit: 100, is_closed: false } });
+        setCycles(res.data.data || []);
+      } else if (activeTab === 'closed_cycles') {
+        const res = await client.get('/cycles', { params: { limit: 100, is_closed: true } });
         setCycles(res.data.data || []);
       }
     } catch (err: any) {
@@ -298,7 +301,7 @@ const RegistroData: React.FC<RegistroDataProps> = ({ role }) => {
         pre_criadero: item.pre_criadero || '',
         weight_gr: parseFloat(item.weight_gr || 0.05)
       });
-    } else if (activeTab === 'cycles') {
+    } else if (activeTab === 'cycles' || activeTab === 'closed_cycles') {
       setSelectedId(item.id);
       setCycleForm({
         harvest_date: item.harvest_date || '',
@@ -351,7 +354,7 @@ const RegistroData: React.FC<RegistroDataProps> = ({ role }) => {
       } else if (activeTab === 'seedings') {
         await client.delete(`/seedings/${idOrCode}`);
         showToast('Siembra eliminada correctamente.');
-      } else if (activeTab === 'cycles') {
+      } else if (activeTab === 'cycles' || activeTab === 'closed_cycles') {
         await client.delete(`/cycles/${idOrCode}`);
         showToast('Ciclo productivo eliminado correctamente.');
       }
@@ -395,7 +398,7 @@ const RegistroData: React.FC<RegistroDataProps> = ({ role }) => {
           await client.post('/seedings', seedingForm);
           showToast('Siembra registrada correctamente.');
         }
-      } else if (activeTab === 'cycles') {
+      } else if (activeTab === 'cycles' || activeTab === 'closed_cycles') {
         if (editMode) {
           await client.put(`/cycles/${selectedId}`, cycleForm);
           showToast('Ciclo productivo actualizado y KPIs recalculados.');
@@ -420,14 +423,18 @@ const RegistroData: React.FC<RegistroDataProps> = ({ role }) => {
     <div className="p-8 space-y-7 max-w-7xl pt-4">
       {/* Action Header (GabarraControl Style) */}
       <div className="flex justify-end">
-        {role === 'admin' ? (
+        {role === 'admin' && activeTab !== 'cycles' && activeTab !== 'closed_cycles' ? (
           <button
             onClick={handleOpenCreate}
             className="flex items-center justify-center space-x-2 bg-cofimar-surface-active hover:opacity-95 text-cofimar-surface-active-text font-semibold px-6 py-2.5 rounded-lg shadow-sm text-xs font-mono"
           >
             <Plus className="w-4 h-4" />
-            <span>AGREGAR NUEVO REGISTRO</span>
+            <span>AGREGAR {activeTab === 'ponds' ? 'PISCINA' : activeTab === 'seedings' ? 'SIEMBRA' : 'COSECHA'}</span>
           </button>
+        ) : role === 'admin' ? (
+          <div className="bg-cofimar-primary/10 border border-cofimar-primary/20 text-cofimar-primary text-[10px] font-mono px-3.5 py-2.5 rounded-lg flex items-center gap-2 shadow-sm">
+            <span>LOS CICLOS SE INICIAN Y CIERRAN DE FORMA AUTOMÁTICA DESDE SIEMBRAS Y COSECHAS</span>
+          </div>
         ) : (
           <div className="bg-cofimar-accent/10 border border-cofimar-accent/20 text-cofimar-accent text-[10px] font-mono px-3.5 py-2 rounded-lg flex items-center gap-2 shadow-sm">
             <AlertTriangle className="w-3.5 h-3.5 animate-pulse" />
@@ -458,17 +465,6 @@ const RegistroData: React.FC<RegistroDataProps> = ({ role }) => {
           <span>1. PISCINAS (DATOS)</span>
         </button>
         <button
-          onClick={() => setActiveTab('harvests')}
-          className={`flex items-center gap-2 px-6 py-3.5 border-b-2 font-mono text-sm font-bold transition duration-200 ${
-            activeTab === 'harvests' 
-              ? 'border-cofimar-primary text-cofimar-primary bg-cofimar-primary/5' 
-              : 'border-transparent text-cofimar-text-muted hover:text-cofimar-text'
-          }`}
-        >
-          <Fish className="w-4 h-4" />
-          <span>2. COSECHAS & QC</span>
-        </button>
-        <button
           onClick={() => setActiveTab('seedings')}
           className={`flex items-center gap-2 px-6 py-3.5 border-b-2 font-mono text-sm font-bold transition duration-200 ${
             activeTab === 'seedings' 
@@ -477,7 +473,18 @@ const RegistroData: React.FC<RegistroDataProps> = ({ role }) => {
           }`}
         >
           <Layers className="w-4 h-4" />
-          <span>3. HISTORIAL SIEMBRAS</span>
+          <span>2. HISTORIAL SIEMBRAS</span>
+        </button>
+        <button
+          onClick={() => setActiveTab('harvests')}
+          className={`flex items-center gap-2 px-6 py-3.5 border-b-2 font-mono text-sm font-bold transition duration-200 ${
+            activeTab === 'harvests' 
+              ? 'border-cofimar-primary text-cofimar-primary bg-cofimar-primary/5' 
+              : 'border-transparent text-cofimar-text-muted hover:text-cofimar-text'
+          }`}
+        >
+          <Fish className="w-4 h-4" />
+          <span>3. COSECHAS & QC</span>
         </button>
         <button
           onClick={() => setActiveTab('cycles')}
@@ -487,8 +494,19 @@ const RegistroData: React.FC<RegistroDataProps> = ({ role }) => {
               : 'border-transparent text-cofimar-text-muted hover:text-cofimar-text'
           }`}
         >
-          <Layers className="w-4 h-4" />
-          <span>4. CICLOS PRODUCTIVOS</span>
+          <Layers className="w-4 h-4 text-cofimar-accent" />
+          <span>4. CICLOS PRODUCTIVOS (ACTIVOS)</span>
+        </button>
+        <button
+          onClick={() => setActiveTab('closed_cycles')}
+          className={`flex items-center gap-2 px-6 py-3.5 border-b-2 font-mono text-sm font-bold transition duration-200 ${
+            activeTab === 'closed_cycles' 
+              ? 'border-cofimar-primary text-cofimar-primary bg-cofimar-primary/5' 
+              : 'border-transparent text-cofimar-text-muted hover:text-cofimar-text'
+          }`}
+        >
+          <CheckCircle2 className="w-4 h-4 text-cofimar-success" />
+          <span>5. CICLOS COSECHADOS (CERRADOS)</span>
         </button>
       </div>
 
@@ -667,7 +685,7 @@ const RegistroData: React.FC<RegistroDataProps> = ({ role }) => {
               </table>
             )}
 
-            {activeTab === 'cycles' && (
+            {(activeTab === 'cycles' || activeTab === 'closed_cycles') && (
               <table className="w-full text-left border-collapse">
                 <thead className="bg-cofimar-surface-secondary text-cofimar-text-muted font-mono text-xs border-b border-cofimar-border/60">
                   <tr>
@@ -686,25 +704,31 @@ const RegistroData: React.FC<RegistroDataProps> = ({ role }) => {
                 <tbody className="divide-y divide-cofimar-border/25 font-mono text-xs">
                   {cycles.length === 0 ? (
                     <tr>
-                      <td colSpan={role === 'admin' ? 10 : 9} className="py-12 text-center text-cofimar-text-muted">No hay ciclos productivos registrados.</td>
+                      <td colSpan={role === 'admin' ? 10 : 9} className="py-12 text-center text-cofimar-text-muted">
+                        {activeTab === 'cycles' ? 'No hay ciclos productivos activos.' : 'No hay ciclos cosechados registrados.'}
+                      </td>
                     </tr>
                   ) : (
                     cycles.map((c, idx) => (
                       <tr key={idx} className="hover:bg-cofimar-surface-secondary transition">
                         <td className="py-3 px-5 font-bold text-cofimar-primary">{c.pond_code}</td>
                         <td className="py-3 px-5 text-cofimar-text">{c.aguaje}</td>
-                        <td className="py-3 px-5 text-cofimar-text-muted font-mono">{c.harvest_date}</td>
+                        <td className="py-3 px-5 text-cofimar-text-muted font-mono">{c.harvest_date || 'EN CURSO'}</td>
                         <td className="py-3 px-5 text-right text-cofimar-text-muted font-mono">{parseFloat(c.hectares || 0).toFixed(2)}</td>
-                        <td className="py-3 px-5 text-right text-cofimar-text font-mono">{Math.round(c.total_lbs || 0).toLocaleString()}</td>
-                        <td className="py-3 px-5 text-right font-bold text-cofimar-text font-mono">{Math.round(c.lbs_ha || 0).toLocaleString()}</td>
-                        <td className="py-3 px-5 text-right font-bold text-cofimar-accent font-mono">{parseFloat(c.survival_pct || 0).toFixed(1)}%</td>
-                        <td className="py-3 px-5 text-right text-cofimar-text font-mono">{Math.round(c.feed_lbs || 0).toLocaleString()}</td>
+                        <td className="py-3 px-5 text-right text-cofimar-text font-mono">{c.total_lbs ? Math.round(c.total_lbs).toLocaleString() : 'N/A'}</td>
+                        <td className="py-3 px-5 text-right font-bold text-cofimar-text font-mono">{c.lbs_ha ? Math.round(c.lbs_ha).toLocaleString() : 'N/A'}</td>
+                        <td className="py-3 px-5 text-right font-bold text-cofimar-accent font-mono">{c.survival_pct ? `${parseFloat(c.survival_pct).toFixed(1)}%` : 'N/A'}</td>
+                        <td className="py-3 px-5 text-right text-cofimar-text font-mono">{c.feed_lbs ? Math.round(c.feed_lbs).toLocaleString() : 'N/A'}</td>
                         <td className="py-3 px-5 text-right">
-                          <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                            c.fca <= 1.35 ? 'bg-cofimar-success/15 text-cofimar-success' : c.fca <= 1.70 ? 'bg-cofimar-warning/15 text-cofimar-warning' : 'bg-cofimar-danger/15 text-cofimar-danger'
-                          }`}>
-                            {parseFloat(c.fca || 0).toFixed(2)}
-                          </span>
+                          {c.fca ? (
+                            <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                              c.fca <= 1.35 ? 'bg-cofimar-success/15 text-cofimar-success' : c.fca <= 1.70 ? 'bg-cofimar-warning/15 text-cofimar-warning' : 'bg-cofimar-danger/15 text-cofimar-danger'
+                            }`}>
+                              {parseFloat(c.fca).toFixed(2)}
+                            </span>
+                          ) : (
+                            <span className="text-cofimar-text-muted text-[10px]">N/A</span>
+                          )}
                         </td>
                         {role === 'admin' && (
                           <td className="py-3 px-5 text-center space-x-2">

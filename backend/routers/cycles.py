@@ -22,6 +22,7 @@ def get_cycles(
     sector: Optional[str] = Query(None),
     pond_code: Optional[str] = Query(None),
     certification: Optional[str] = Query(None),
+    is_closed: Optional[bool] = Query(None),
     date_from: Optional[date] = Query(None),
     date_to: Optional[date] = Query(None),
     min_lbs_ha: Optional[float] = Query(None),
@@ -37,6 +38,9 @@ def get_cycles(
     sort_dir: str = Query("desc")
 ):
     query = db.query(Cycle)
+
+    if is_closed is not None:
+        query = query.filter(Cycle.is_closed == is_closed)
 
     # Apply categorical filters
     if year is not None:
