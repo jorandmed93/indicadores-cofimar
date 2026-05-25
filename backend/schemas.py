@@ -64,6 +64,7 @@ class SeedingCreate(SeedingBase):
 
 class Seeding(SeedingBase):
     id: int
+    is_closed: Optional[bool] = None
     class Config:
         from_attributes = True
 

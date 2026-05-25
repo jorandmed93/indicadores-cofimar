@@ -14,12 +14,32 @@ from sqlalchemy import desc
 def get_seedings(
     db: Session = Depends(get_db),
     pond_code: Optional[str] = Query(None),
+    is_closed: Optional[bool] = Query(None),
     limit: int = Query(100, ge=1, le=1000)
 ):
+    from ..models import Cycle
     query = db.query(Seeding)
     if pond_code:
         query = query.filter(Seeding.pond_code == pond_code)
-    return query.order_by(desc(Seeding.seeding_date)).limit(limit).all()
+    
+    seedings = query.order_by(desc(Seeding.seeding_date)).all()
+    
+    result = []
+    for s in seedings:
+        match_cycle = db.query(Cycle).filter(
+            Cycle.pond_code == s.pond_code,
+            Cycle.seeding_date == s.seeding_date
+        ).first()
+        s_closed = match_cycle.is_closed if match_cycle else False
+        
+        if is_closed is not None:
+            if is_closed != s_closed:
+                continue
+                
+        s.is_closed = s_closed
+        result.append(s)
+        
+    return result[:limit]
 
 @router.post("", response_model=SeedingSchema)
 def create_seeding(seeding_in: SeedingCreate, db: Session = Depends(get_db)):

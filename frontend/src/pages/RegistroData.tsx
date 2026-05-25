@@ -149,7 +149,7 @@ const RegistroData: React.FC<RegistroDataProps> = ({ role }) => {
         const res = await client.get('/harvests', { params: { limit: 100 } });
         setHarvests(res.data.data || []);
       } else if (activeTab === 'seedings') {
-        const res = await client.get('/seedings');
+        const res = await client.get('/seedings', { params: { is_closed: true } });
         setSeedings(res.data);
       } else if (activeTab === 'cycles') {
         const res = await client.get('/cycles', { params: { limit: 100, is_closed: false } });
