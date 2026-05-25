@@ -9,6 +9,7 @@ class PondBase(BaseModel):
     sector: Optional[str] = None
     hectares: Optional[Decimal] = None
     certification: Optional[str] = None
+    sector_chief: Optional[str] = None
 
 class PondCreate(PondBase):
     pass

@@ -69,17 +69,7 @@ def create_seeding(seeding_in: SeedingCreate, db: Session = Depends(get_db)):
     certification = pond.certification if pond else None
     pond_name = seeding_in.pond_code.split(" ")[1] if " " in seeding_in.pond_code else seeding_in.pond_code
     
-    sector_chief = None
-    if sector:
-        sector_chiefs_map = {
-            'DORADO': 'DAVID SANCHEZ',
-            'TUNA': 'GUSTAVO CARRASCO',
-            'COCORA': 'JEFE COCORA',
-            'MARIA': 'JEFE MARIA',
-            'CHUPADORES': 'JEFE CHUPADORES',
-            'SOLEDAD': 'JEFE SOLEDAD'
-        }
-        sector_chief = sector_chiefs_map.get(sector.upper())
+    sector_chief = pond.sector_chief if pond else None
     db_cycle = Cycle(
         pond_code=seeding_in.pond_code,
         pond_name=pond_name,

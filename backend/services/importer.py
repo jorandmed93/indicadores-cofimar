@@ -95,11 +95,22 @@ def import_excel_file(file_path: str, db: Session):
             prefix = code.split()[0] if len(code.split()) > 0 else ''
             sector = PREFIX_TO_SECTOR.get(prefix.upper(), prefix.upper())
             
+            sector_chiefs_map = {
+                'DORADO': 'DAVID SANCHEZ',
+                'TUNA': 'GUSTAVO CARRASCO',
+                'COCORA': 'JEFE COCORA',
+                'MARIA': 'JEFE MARIA',
+                'CHUPADORES': 'JEFE CHUPADORES',
+                'SOLEDAD': 'JEFE SOLEDAD'
+            }
+            sector_chief = sector_chiefs_map.get((sector or '').upper())
+            
             pond = Pond(
                 code=code,
                 hectares=clean_num(row.get('has')),
                 certification=clean_str(row.get('CERTIFICADA')),
-                sector=sector
+                sector=sector,
+                sector_chief=sector_chief
             )
             db.add(pond)
             ponds_imported += 1

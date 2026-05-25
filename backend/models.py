@@ -8,6 +8,7 @@ class Pond(Base):
     sector = Column(String(50), nullable=True)
     hectares = Column(Numeric(8, 2), nullable=True)
     certification = Column(String(30), nullable=True)
+    sector_chief = Column(String(100), nullable=True)
 
 class Cycle(Base):
     __tablename__ = "cycles"

@@ -51,7 +51,8 @@ const RegistroData: React.FC<RegistroDataProps> = ({ role }) => {
     code: '',
     sector: '',
     hectares: 0,
-    certification: 'ASC'
+    certification: 'ASC',
+    sector_chief: ''
   });
 
   const [harvestForm, setHarvestForm] = useState({
@@ -196,7 +197,7 @@ const RegistroData: React.FC<RegistroDataProps> = ({ role }) => {
     setError(null);
     
     // Reset forms
-    setPondForm({ code: '', sector: '', hectares: 0, certification: 'ASC' });
+    setPondForm({ code: '', sector: '', hectares: 0, certification: 'ASC', sector_chief: '' });
     setHarvestForm({
       pond_code: allPondsCatalog[0]?.code || '',
       activity: 'PESCA',
@@ -264,20 +265,29 @@ const RegistroData: React.FC<RegistroDataProps> = ({ role }) => {
     setEditMode(false);
     setSelectedId(null);
     setError(null);
+    
+    const matchedPond = allPondsCatalog.find(
+      p => p.code.trim().toUpperCase() === pondCode.trim().toUpperCase()
+    );
+    const finalCode = matchedPond ? matchedPond.code : pondCode;
+    const finalChief = matchedPond ? matchedPond.sector_chief || '' : '';
+    const finalCert = matchedPond ? matchedPond.certification || 'ASC' : 'ASC';
+
     setHarvestForm({
-      pond_code: pondCode,
+      pond_code: finalCode,
       activity: 'RALEO',
       harvest_date: new Date().toISOString().split('T')[0],
       lbs_farm: 0,
       lbs_plant: 0,
       gr_farm: 0,
       gr_plant: 0,
-      sector_chief: '',
-      certification: 'ASC',
+      sector_chief: finalChief,
+      certification: finalCert,
       feed_lbs: 0,
       feed_supplier: '',
       feeding_mode: 'AUTOMATICA'
     });
+    
     setActiveTab('harvests');
     setIsModalOpen(true);
   };
@@ -292,7 +302,8 @@ const RegistroData: React.FC<RegistroDataProps> = ({ role }) => {
         code: item.code,
         sector: item.sector || '',
         hectares: parseFloat(item.hectares || 0),
-        certification: item.certification || 'ASC'
+        certification: item.certification || 'ASC',
+        sector_chief: item.sector_chief || ''
       });
     } else if (activeTab === 'harvests') {
       setSelectedId(item.id);
@@ -554,13 +565,14 @@ const RegistroData: React.FC<RegistroDataProps> = ({ role }) => {
                     <th className="py-4 px-6">SECTOR</th>
                     <th className="py-4 px-6 text-right">HECTÁREAS (HAS)</th>
                     <th className="py-4 px-6">CERTIFICACIÓN</th>
+                    <th className="py-4 px-6">RESPONSABLE SECTOR</th>
                     {role === 'admin' && <th className="py-4 px-6 text-center">ACCIONES</th>}
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-cofimar-border/25 font-mono text-sm">
                   {ponds.length === 0 ? (
                     <tr>
-                      <td colSpan={role === 'admin' ? 5 : 4} className="py-12 text-center text-cofimar-text-muted">No hay piscinas registradas.</td>
+                      <td colSpan={role === 'admin' ? 6 : 5} className="py-12 text-center text-cofimar-text-muted">No hay piscinas registradas.</td>
                     </tr>
                   ) : (
                     ponds.map((p, idx) => (
@@ -573,6 +585,7 @@ const RegistroData: React.FC<RegistroDataProps> = ({ role }) => {
                             {p.certification || 'CONVENCIONAL'}
                           </span>
                         </td>
+                        <td className="py-3 px-6 text-cofimar-text font-mono font-medium">{p.sector_chief || 'N/A'}</td>
                         {role === 'admin' && (
                           <td className="py-3 px-6 whitespace-nowrap w-[100px]">
                             <div className="flex items-center justify-center gap-2">
@@ -906,6 +919,17 @@ const RegistroData: React.FC<RegistroDataProps> = ({ role }) => {
                       <option value="CONVENCIONAL">CONVENCIONAL</option>
                     </select>
                   </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-mono text-cofimar-text-muted uppercase block">Responsable de Sector / Jefe</label>
+                    <input
+                      type="text"
+                      value={pondForm.sector_chief}
+                      onChange={(e) => setPondForm({ ...pondForm, sector_chief: e.target.value.toUpperCase() })}
+                      className="w-full bg-cofimar-bg/50 border border-cofimar-border rounded-lg px-4 py-2.5 font-mono text-sm text-cofimar-text focus:outline-none focus:border-cofimar-primary focus:ring-1 focus:ring-cofimar-primary/30 transition-all duration-200"
+                      placeholder="Ej: GUSTAVO CARRASCO"
+                    />
+                  </div>
                 </div>
               )}
 
@@ -917,7 +941,16 @@ const RegistroData: React.FC<RegistroDataProps> = ({ role }) => {
                     <select
                       required
                       value={harvestForm.pond_code}
-                      onChange={(e) => setHarvestForm({ ...harvestForm, pond_code: e.target.value })}
+                      onChange={(e) => {
+                        const selectedCode = e.target.value;
+                        const matched = allPondsCatalog.find(p => p.code === selectedCode);
+                        setHarvestForm({
+                          ...harvestForm,
+                          pond_code: selectedCode,
+                          sector_chief: matched ? matched.sector_chief || '' : harvestForm.sector_chief,
+                          certification: matched ? matched.certification || 'ASC' : harvestForm.certification
+                        });
+                      }}
                       className="w-full bg-cofimar-bg/50 border border-cofimar-border rounded-lg px-4 py-2.5 font-mono text-sm text-cofimar-text focus:outline-none focus:border-cofimar-primary focus:ring-1 focus:ring-cofimar-primary/30 transition-all duration-200"
                     >
                       {allPondsCatalog.map((p) => (

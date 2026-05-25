@@ -24,6 +24,13 @@ def create_pond(pond_in: PondCreate, db: Session = Depends(get_db)):
     db.add(db_pond)
     db.commit()
     db.refresh(db_pond)
+    
+    # Auto-propagate sector chief to other ponds in the same sector
+    if db_pond.sector and db_pond.sector_chief:
+        db.query(Pond).filter(Pond.sector == db_pond.sector).update({Pond.sector_chief: db_pond.sector_chief})
+        db.commit()
+        db.refresh(db_pond)
+        
     return db_pond
 
 @router.put("/{code}", response_model=PondSchema)
@@ -38,6 +45,13 @@ def update_pond(code: str, pond_in: PondCreate, db: Session = Depends(get_db)):
         setattr(db_pond, k, v)
     db.commit()
     db.refresh(db_pond)
+    
+    # Auto-propagate sector chief to other ponds in the same sector
+    if db_pond.sector and db_pond.sector_chief:
+        db.query(Pond).filter(Pond.sector == db_pond.sector).update({Pond.sector_chief: db_pond.sector_chief})
+        db.commit()
+        db.refresh(db_pond)
+        
     return db_pond
 
 @router.delete("/{code}")

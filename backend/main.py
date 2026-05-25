@@ -29,6 +29,13 @@ try:
         with engine.begin() as conn:
             conn.execute(text("ALTER TABLE seedings ADD COLUMN dry_days INTEGER DEFAULT 0"))
 
+    # Check ponds columns
+    ponds_cols = [col['name'] for col in inspector.get_columns('ponds')]
+    if 'sector_chief' not in ponds_cols:
+        print("Migración: Agregando columna 'sector_chief' a la tabla 'ponds'...")
+        with engine.begin() as conn:
+            conn.execute(text("ALTER TABLE ponds ADD COLUMN sector_chief VARCHAR(100)"))
+
     # Check cycles columns
     cycles_cols = [col['name'] for col in inspector.get_columns('cycles')]
     if 'is_closed' not in cycles_cols:
@@ -154,7 +161,8 @@ try:
                 gr_trawl_farm=gr_trawl_farm,
                 gr_trawl_plant=gr_trawl_plant,
                 lbs_ha_trawl=lbs_trawl_plant / float(hectares or 1.0),
-                animals_trawl=animals_trawl
+                animals_trawl=animals_trawl,
+                sector_chief=pond.sector_chief if pond else None
             )
             
             if pesca:
