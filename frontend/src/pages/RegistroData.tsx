@@ -574,21 +574,23 @@ const RegistroData: React.FC<RegistroDataProps> = ({ role }) => {
                           </span>
                         </td>
                         {role === 'admin' && (
-                          <td className="py-3 px-6 text-center space-x-2">
-                            <button
-                              onClick={() => handleOpenEdit(p)}
-                              className="bg-cofimar-surface-secondary hover:bg-cofimar-surface-hover text-cofimar-primary p-1.5 rounded-lg border border-cofimar-border transition"
-                              title="Editar"
-                            >
-                              <Edit2 className="w-3.5 h-3.5" />
-                            </button>
-                            <button
-                              onClick={() => handleDelete(p.code)}
-                              className="bg-cofimar-surface-secondary hover:bg-red-50 dark:hover:bg-red-950/20 text-cofimar-danger p-1.5 rounded-lg border border-cofimar-border transition"
-                              title="Eliminar"
-                            >
-                              <Trash2 className="w-3.5 h-3.5" />
-                            </button>
+                          <td className="py-3 px-6 whitespace-nowrap w-[100px]">
+                            <div className="flex items-center justify-center gap-2">
+                              <button
+                                onClick={() => handleOpenEdit(p)}
+                                className="bg-cofimar-surface-secondary hover:bg-cofimar-surface-hover text-cofimar-primary p-1.5 rounded-lg border border-cofimar-border transition"
+                                title="Editar"
+                              >
+                                <Edit2 className="w-3.5 h-3.5" />
+                              </button>
+                              <button
+                                onClick={() => handleDelete(p.code)}
+                                className="bg-cofimar-surface-secondary hover:bg-red-50 dark:hover:bg-red-950/20 text-cofimar-danger p-1.5 rounded-lg border border-cofimar-border transition"
+                                title="Eliminar"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
                           </td>
                         )}
                       </tr>
@@ -636,19 +638,23 @@ const RegistroData: React.FC<RegistroDataProps> = ({ role }) => {
                         <td className="py-3 px-5 text-right text-cofimar-text-muted font-mono">{parseFloat(h.gr_plant || 0).toFixed(2)}</td>
                         <td className="py-3 px-5 text-cofimar-text-muted font-sans">{h.sector_chief}</td>
                         {role === 'admin' && (
-                          <td className="py-3 px-5 text-center space-x-2">
-                            <button
-                              onClick={() => handleOpenEdit(h)}
-                              className="bg-cofimar-surface-secondary hover:bg-cofimar-surface-hover text-cofimar-primary p-1.5 rounded-lg border border-cofimar-border transition"
-                            >
-                              <Edit2 className="w-3.5 h-3.5" />
-                            </button>
-                            <button
-                              onClick={() => handleDelete(h.id)}
-                              className="bg-cofimar-surface-secondary hover:bg-red-50 dark:hover:bg-red-950/20 text-cofimar-danger p-1.5 rounded-lg border border-cofimar-border transition"
-                            >
-                              <Trash2 className="w-3.5 h-3.5" />
-                            </button>
+                          <td className="py-3 px-5 whitespace-nowrap w-[100px]">
+                            <div className="flex items-center justify-center gap-2">
+                              <button
+                                onClick={() => handleOpenEdit(h)}
+                                className="bg-cofimar-surface-secondary hover:bg-cofimar-surface-hover text-cofimar-primary p-1.5 rounded-lg border border-cofimar-border transition"
+                                title="Editar"
+                              >
+                                <Edit2 className="w-3.5 h-3.5" />
+                              </button>
+                              <button
+                                onClick={() => handleDelete(h.id)}
+                                className="bg-cofimar-surface-secondary hover:bg-red-50 dark:hover:bg-red-950/20 text-cofimar-danger p-1.5 rounded-lg border border-cofimar-border transition"
+                                title="Eliminar"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
                           </td>
                         )}
                       </tr>
@@ -692,19 +698,23 @@ const RegistroData: React.FC<RegistroDataProps> = ({ role }) => {
                         <td className="py-3 px-5 text-right text-cofimar-text font-mono">{s.dry_days || 0}</td>
                         <td className="py-3 px-5 text-right font-bold text-cofimar-accent font-mono">{parseFloat(s.survival_pct || 0).toFixed(2)}%</td>
                         {role === 'admin' && (
-                          <td className="py-3 px-5 text-center space-x-2">
-                            <button
-                              onClick={() => handleOpenEdit(s)}
-                              className="bg-cofimar-surface-secondary hover:bg-cofimar-surface-hover text-cofimar-primary p-1.5 rounded-lg border border-cofimar-border transition"
-                            >
-                              <Edit2 className="w-3.5 h-3.5" />
-                            </button>
-                            <button
-                              onClick={() => handleDelete(s.id)}
-                              className="bg-cofimar-surface-secondary hover:bg-red-50 dark:hover:bg-red-950/20 text-cofimar-danger p-1.5 rounded-lg border border-cofimar-border transition"
-                            >
-                              <Trash2 className="w-3.5 h-3.5" />
-                            </button>
+                          <td className="py-3 px-5 whitespace-nowrap w-[100px]">
+                            <div className="flex items-center justify-center gap-2">
+                              <button
+                                onClick={() => handleOpenEdit(s)}
+                                className="bg-cofimar-surface-secondary hover:bg-cofimar-surface-hover text-cofimar-primary p-1.5 rounded-lg border border-cofimar-border transition"
+                                title="Editar"
+                              >
+                                <Edit2 className="w-3.5 h-3.5" />
+                              </button>
+                              <button
+                                onClick={() => handleDelete(s.id)}
+                                className="bg-cofimar-surface-secondary hover:bg-red-50 dark:hover:bg-red-950/20 text-cofimar-danger p-1.5 rounded-lg border border-cofimar-border transition"
+                                title="Eliminar"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
                           </td>
                         )}
                       </tr>
@@ -760,31 +770,33 @@ const RegistroData: React.FC<RegistroDataProps> = ({ role }) => {
                           )}
                         </td>
                         {role === 'admin' && (
-                          <td className="py-3 px-5 text-center space-x-2">
-                            {activeTab === 'cycles' && (
+                          <td className="py-3 px-5 whitespace-nowrap min-w-[120px]">
+                            <div className="flex items-center justify-center gap-2">
+                              {activeTab === 'cycles' && (
+                                <button
+                                  onClick={() => handleRegisterHarvestForCycle(c.pond_code)}
+                                  className="bg-cofimar-success/15 hover:bg-cofimar-success text-cofimar-success hover:text-cofimar-bg px-2.5 py-1.5 rounded-lg border border-cofimar-success/30 text-[10px] font-mono font-bold transition inline-flex items-center gap-1.5"
+                                  title="Registrar Pesca / Raleo"
+                                >
+                                  <Fish className="w-3.5 h-3.5" />
+                                  <span>COSECHAR</span>
+                                </button>
+                              )}
                               <button
-                                onClick={() => handleRegisterHarvestForCycle(c.pond_code)}
-                                className="bg-cofimar-success/15 hover:bg-cofimar-success text-cofimar-success hover:text-cofimar-bg px-2.5 py-1.5 rounded-lg border border-cofimar-success/30 text-[10px] font-mono font-bold transition inline-flex items-center gap-1.5"
-                                title="Registrar Pesca / Raleo"
+                                onClick={() => handleOpenEdit(c)}
+                                className="bg-cofimar-surface-secondary hover:bg-cofimar-surface-hover text-cofimar-primary p-1.5 rounded-lg border border-cofimar-border transition"
+                                title="Editar"
                               >
-                                <Fish className="w-3.5 h-3.5" />
-                                <span>COSECHAR</span>
+                                <Edit2 className="w-3.5 h-3.5" />
                               </button>
-                            )}
-                            <button
-                              onClick={() => handleOpenEdit(c)}
-                              className="bg-cofimar-surface-secondary hover:bg-cofimar-surface-hover text-cofimar-primary p-1.5 rounded-lg border border-cofimar-border transition"
-                              title="Editar"
-                            >
-                              <Edit2 className="w-3.5 h-3.5" />
-                            </button>
-                            <button
-                              onClick={() => handleDelete(c.id)}
-                              className="bg-cofimar-surface-secondary hover:bg-red-50 dark:hover:bg-red-950/20 text-cofimar-danger p-1.5 rounded-lg border border-cofimar-border transition"
-                              title="Eliminar"
-                            >
-                              <Trash2 className="w-3.5 h-3.5" />
-                            </button>
+                              <button
+                                onClick={() => handleDelete(c.id)}
+                                className="bg-cofimar-surface-secondary hover:bg-red-50 dark:hover:bg-red-950/20 text-cofimar-danger p-1.5 rounded-lg border border-cofimar-border transition"
+                                title="Eliminar"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
                           </td>
                         )}
                       </tr>
