@@ -16,6 +16,9 @@ def get_harvests(
     pond_code: Optional[str] = Query(None),
     activity: Optional[str] = Query(None),
     sector: Optional[str] = Query(None),
+    month: Optional[str] = Query(None),
+    certification: Optional[str] = Query(None),
+    sector_chief: Optional[str] = Query(None),
     date_from: Optional[date] = Query(None),
     date_to: Optional[date] = Query(None),
     page: int = Query(1, ge=1),
@@ -26,12 +29,18 @@ def get_harvests(
     query = db.query(Harvest)
 
     # Apply filters
-    if pond_code is not None:
-        query = query.filter(Harvest.pond_code == pond_code)
-    if activity is not None:
+    if pond_code is not None and pond_code.strip() != "":
+        query = query.filter(Harvest.pond_code.ilike(f"%{pond_code}%"))
+    if activity is not None and activity.strip() != "":
         query = query.filter(Harvest.activity == activity.upper())
-    if sector is not None:
+    if sector is not None and sector.strip() != "":
         query = query.filter(Harvest.sector == sector)
+    if month is not None and month.strip() != "":
+        query = query.filter(Harvest.month == month.upper())
+    if certification is not None and certification.strip() != "":
+        query = query.filter(Harvest.certification == certification)
+    if sector_chief is not None and sector_chief.strip() != "":
+        query = query.filter(Harvest.sector_chief.ilike(f"%{sector_chief}%"))
     if date_from is not None:
         query = query.filter(Harvest.harvest_date >= date_from)
     if date_to is not None:

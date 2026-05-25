@@ -16,6 +16,8 @@ const Harvests: React.FC = () => {
   const [search, setSearch] = useState('');
   const [selectedActivity, setSelectedActivity] = useState('');
   const [selectedSector, setSelectedSector] = useState('');
+  const [selectedMonth, setSelectedMonth] = useState('');
+  const [selectedCertification, setSelectedCertification] = useState('');
   const [sectors, setSectors] = useState<string[]>([]);
   
   const [avgDiffLbs, setAvgDiffLbs] = useState(0);
@@ -34,6 +36,8 @@ const Harvests: React.FC = () => {
     if (search) params.pond_code = search;
     if (selectedActivity) params.activity = selectedActivity;
     if (selectedSector) params.sector = selectedSector;
+    if (selectedMonth) params.month = selectedMonth;
+    if (selectedCertification) params.certification = selectedCertification;
 
     client.get('/harvests', { params })
       .then(res => {
@@ -56,12 +60,15 @@ const Harvests: React.FC = () => {
       .catch(err => { console.error(err); setLoading(false); });
   };
 
-  useEffect(() => { fetchHarvests(); }, [page, limit, selectedActivity, selectedSector]);
+  useEffect(() => { fetchHarvests(); }, [page, limit, selectedActivity, selectedSector, selectedMonth, selectedCertification, search]);
 
-  const handleSearchSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleResetFilters = () => {
+    setSearch('');
+    setSelectedActivity('');
+    setSelectedSector('');
+    setSelectedMonth('');
+    setSelectedCertification('');
     setPage(1);
-    fetchHarvests();
   };
 
   const selectClass = "bg-cofimar-surface border border-cofimar-border text-cofimar-text text-xs px-3.5 py-2.5 rounded-lg focus:border-cofimar-primary focus:outline-none transition min-w-[130px]";
@@ -119,36 +126,54 @@ const Harvests: React.FC = () => {
       </div>
 
       {/* Filter and Search */}
-      <div className="glass-card p-5 rounded-lg flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-        <form onSubmit={handleSearchSubmit} className="flex-1 flex items-center space-x-3 max-w-md">
-          <div className="relative flex-1">
+      <div className="glass-card p-5 rounded-lg flex flex-col xl:flex-row xl:items-center justify-between gap-4">
+        <div className="flex-1 flex flex-col md:flex-row md:items-center gap-3">
+          <div className="relative flex-1 max-w-xs">
             <Search className="w-4 h-4 text-cofimar-text-faint absolute left-3.5 top-1/2 -translate-y-1/2" />
             <input
               type="text"
-              placeholder="Buscar por código de piscina..."
+              placeholder="Buscar piscina (ej: DO 10, GT)..."
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full bg-cofimar-surface-secondary border border-cofimar-border text-cofimar-text text-xs pl-10 pr-4 py-2.5 rounded-lg focus:border-cofimar-primary focus:outline-none transition placeholder:text-cofimar-text-faint"
+              onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+              className="w-full bg-cofimar-surface-secondary border border-cofimar-border text-cofimar-text text-xs pl-10 pr-4 py-2.5 rounded-lg focus:border-cofimar-primary focus:outline-none transition placeholder:text-cofimar-text-faint font-mono"
             />
           </div>
-          <button 
-            type="submit"
-            className="bg-cofimar-surface-secondary border border-cofimar-border text-cofimar-text-secondary hover:text-cofimar-text px-4 py-2.5 rounded-lg text-xs font-medium font-mono hover:bg-cofimar-surface-hover transition"
-          >
-            FILTRAR
-          </button>
-        </form>
 
-        <div className="flex items-center gap-3">
-          <select value={selectedActivity} onChange={(e) => { setSelectedActivity(e.target.value); setPage(1); }} className={selectClass}>
-            <option value="">ACTIVIDAD</option>
-            <option value="PESCA">PESCA (FINAL)</option>
-            <option value="RALEO">RALEO (PARCIAL)</option>
-          </select>
-          <select value={selectedSector} onChange={(e) => { setSelectedSector(e.target.value); setPage(1); }} className={selectClass}>
-            <option value="">SECTOR</option>
-            {sectors.map(s => <option key={s} value={s}>{s}</option>)}
-          </select>
+          <div className="flex flex-wrap items-center gap-3">
+            <select value={selectedActivity} onChange={(e) => { setSelectedActivity(e.target.value); setPage(1); }} className={selectClass}>
+              <option value="">ACTIVIDAD</option>
+              <option value="PESCA">PESCA (FINAL)</option>
+              <option value="RALEO">RALEO (PARCIAL)</option>
+            </select>
+            
+            <select value={selectedSector} onChange={(e) => { setSelectedSector(e.target.value); setPage(1); }} className={selectClass}>
+              <option value="">SECTOR</option>
+              {sectors.map(s => <option key={s} value={s}>{s}</option>)}
+            </select>
+
+            <select value={selectedMonth} onChange={(e) => { setSelectedMonth(e.target.value); setPage(1); }} className={selectClass}>
+              <option value="">MES</option>
+              {["ENERO", "FEBRERO", "MARZO", "ABRIL", "MAYO", "JUNIO", "JULIO", "AGOSTO", "SEPTIEMBRE", "OCTUBRE", "NOVIEMBRE", "DICIEMBRE"].map(m => (
+                <option key={m} value={m}>{m}</option>
+              ))}
+            </select>
+
+            <select value={selectedCertification} onChange={(e) => { setSelectedCertification(e.target.value); setPage(1); }} className={selectClass}>
+              <option value="">CERTIFICACIÓN</option>
+              {["CONVENCIONAL", "ASC", "BAP", "ASC-BAP"].map(c => (
+                <option key={c} value={c}>{c}</option>
+              ))}
+            </select>
+
+            {(search || selectedActivity || selectedSector || selectedMonth || selectedCertification) && (
+              <button 
+                onClick={handleResetFilters}
+                className="bg-cofimar-danger/10 border border-cofimar-danger/30 text-cofimar-danger hover:bg-cofimar-danger/25 px-4 py-2.5 rounded-lg text-xs font-semibold font-mono transition"
+              >
+                LIMPIAR FILTROS
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
