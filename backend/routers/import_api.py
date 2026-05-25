@@ -46,6 +46,38 @@ def import_excel(
         if os.path.exists(temp_file_path):
             os.remove(temp_file_path)
 
+@router.post("/reseed")
+def reseed_database(db: Session = Depends(get_db)):
+    possible_paths = [
+        os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "BASE INDICADORES 2026.xlsm"),
+        os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "BASE INDICADORES 2026.xlsm"),
+        "BASE INDICADORES 2026.xlsm",
+    ]
+    excel_path = None
+    for p in possible_paths:
+        if os.path.exists(p):
+            excel_path = os.path.abspath(p)
+            break
+            
+    if not excel_path:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Bundled Excel template BASE INDICADORES 2026.xlsm not found in repository."
+        )
+        
+    try:
+        result = import_excel_file(excel_path, db)
+        return {
+            "status": "success", 
+            "message": "Database reseeded successfully from repository Excel file.", 
+            "details": result
+        }
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"An error occurred during reseed: {str(e)}"
+        )
+
 @router.get("/template")
 def download_template():
     import io

@@ -200,27 +200,83 @@ def import_excel_file(file_path: str, db: Session):
             if not harvest_date or not pond_code:
                 continue
                 
-            # Safely extract evaluated grammage values from Excel
-            gr_harvest_farm = clean_num(row.get('GRAMAJE CAMARONERA'))
-            gr_harvest_plant = clean_num(row.get('GRAMOS PLANTA'))
-            
             # Excel SUMIFS Formula Bug Correction:
-            # If a pond has both a RALEO and a PESCA on the same day, the Excel formula
-            # '=SUMIFS(COSECHAS!F:F, ...)' will sum the grammages (e.g. 36 + 36 = 72).
-            # We query the database's `harvests` table for a PESCA event on that day
-            # to retrieve the true individual event weight.
-            pesca_event = db.query(Harvest).filter(
-                Harvest.pond_code == pond_code,
-                Harvest.harvest_date == harvest_date,
-                Harvest.activity == "PESCA"
-            ).first()
-            
-            if pesca_event:
-                if pesca_event.gr_farm > 0 and pesca_event.gr_farm != gr_harvest_farm:
-                    gr_harvest_farm = pesca_event.gr_farm
-                if pesca_event.gr_plant > 0 and pesca_event.gr_plant != gr_harvest_plant:
-                    gr_harvest_plant = pesca_event.gr_plant
-            
+            # We dynamically calculate the raleo and harvest pounds from the database's `harvests` table
+            # to prevent Excel's formula bugs (e.g. dropping raleos that occurred on the same day as harvest).
+            seeding_date = parse_date(row.get('FECHA DE SIEMBRA'))
+            harvests_in_cycle = []
+            if seeding_date:
+                harvests_in_cycle = db.query(Harvest).filter(
+                    Harvest.pond_code == pond_code,
+                    Harvest.harvest_date >= seeding_date,
+                    Harvest.harvest_date <= harvest_date
+                ).all()
+
+            # Special case override for DO 10 on 2026-05-21 as requested by the user
+            if pond_code == "DO 10" and harvest_date == parse_date("2026-05-21"):
+                harvests_in_cycle = [h for h in harvests_in_cycle if h.harvest_date != parse_date("2026-04-17")]
+
+            if len(harvests_in_cycle) > 0:
+                lbs_trawl_farm = 0.0
+                lbs_trawl_plant = 0.0
+                lbs_harvest_farm = 0.0
+                lbs_harvest_plant = 0.0
+                
+                gr_trawl_farm_sum = 0.0
+                gr_trawl_plant_sum = 0.0
+                gr_trawl_count = 0
+                
+                gr_harvest_farm_sum = 0.0
+                gr_harvest_plant_sum = 0.0
+                gr_harvest_count = 0
+                
+                animals_trawl = 0.0
+                animals_harvest = 0.0
+                
+                for h in harvests_in_cycle:
+                    h_lbs_farm = float(h.lbs_farm or 0)
+                    h_lbs_plant = float(h.lbs_plant or 0)
+                    h_gr_farm = float(h.gr_farm or 0)
+                    h_gr_plant = float(h.gr_plant or 0)
+                    h_animals = float(h.animals or 0)
+                    
+                    if h.activity == "RALEO":
+                        lbs_trawl_farm += h_lbs_farm
+                        lbs_trawl_plant += h_lbs_plant
+                        if h_gr_farm > 0:
+                            gr_trawl_farm_sum += h_gr_farm
+                        if h_gr_plant > 0:
+                            gr_trawl_plant_sum += h_gr_plant
+                            gr_trawl_count += 1
+                        animals_trawl += h_animals
+                    elif h.activity == "PESCA":
+                        lbs_harvest_farm += h_lbs_farm
+                        lbs_harvest_plant += h_lbs_plant
+                        if h_gr_farm > 0:
+                            gr_harvest_farm_sum += h_gr_farm
+                        if h_gr_plant > 0:
+                            gr_harvest_plant_sum += h_gr_plant
+                            gr_harvest_count += 1
+                        animals_harvest += h_animals
+                
+                gr_trawl_farm = gr_trawl_farm_sum / gr_trawl_count if gr_trawl_count > 0 else clean_num(row.get('GRAMAJE RALEO CAMARONERA'))
+                gr_trawl_plant = gr_trawl_plant_sum / gr_trawl_count if gr_trawl_count > 0 else clean_num(row.get('GRAMAJE RALEO PLANTA'))
+                
+                gr_harvest_farm = gr_harvest_farm_sum / gr_harvest_count if gr_harvest_count > 0 else clean_num(row.get('GRAMAJE CAMARONERA'))
+                gr_harvest_plant = gr_harvest_plant_sum / gr_harvest_count if gr_harvest_count > 0 else clean_num(row.get('GRAMOS PLANTA'))
+            else:
+                lbs_trawl_farm = clean_num(row.get('LIBRAS RALEO CAMARONERA'))
+                lbs_trawl_plant = clean_num(row.get('LIBRAS RALEO PLANTA'))
+                gr_trawl_farm = clean_num(row.get('GRAMAJE RALEO CAMARONERA'))
+                gr_trawl_plant = clean_num(row.get('GRAMAJE RALEO PLANTA'))
+                animals_trawl = clean_num(row.get('CAM COSECHADOS RALEO'))
+                
+                lbs_harvest_farm = clean_num(row.get('LIBRAS CAMARONERA'))
+                lbs_harvest_plant = clean_num(row.get('LIBRAS PLANTA'))
+                gr_harvest_farm = clean_num(row.get('GRAMAJE CAMARONERA'))
+                gr_harvest_plant = clean_num(row.get('GRAMOS PLANTA'))
+                animals_harvest = clean_num(row.get('CAM COSECHADOS'))
+
             cycle = Cycle(
                 id=clean_int(row.get('ID')),
                 harvest_date=harvest_date,
@@ -233,27 +289,27 @@ def import_excel_file(file_path: str, db: Session):
                 hectares=clean_num(row.get('HAS')),
                 certification=clean_str(row.get('Certificación')),
                 days=clean_int(row.get('DIAS')),
-                seeding_date=parse_date(row.get('FECHA DE SIEMBRA')),
+                seeding_date=seeding_date,
                 pre=clean_str(row.get('PRE')),
                 seeding_weight=clean_num(row.get('PESO DE SIEMBRA')),
                 dry_days=clean_int(row.get('DIAS SECOS')),
                 animals_seeded=clean_int(row.get('ANIM SEMBRADOS')),
                 
                 # Raleos
-                lbs_trawl_farm=clean_num(row.get('LIBRAS RALEO CAMARONERA')),
-                lbs_trawl_plant=clean_num(row.get('LIBRAS RALEO PLANTA')),
-                gr_trawl_farm=clean_num(row.get('GRAMAJE RALEO CAMARONERA')),
-                gr_trawl_plant=clean_num(row.get('GRAMAJE RALEO PLANTA')),
-                lbs_ha_trawl=clean_num(row.get('LBS/HA RALEO')),
-                animals_trawl=clean_num(row.get('CAM COSECHADOS RALEO')),
+                lbs_trawl_farm=lbs_trawl_farm,
+                lbs_trawl_plant=lbs_trawl_plant,
+                gr_trawl_farm=gr_trawl_farm,
+                gr_trawl_plant=gr_trawl_plant,
+                lbs_ha_trawl=lbs_trawl_plant / clean_num(row.get('HAS')) if clean_num(row.get('HAS')) > 0 else 0.0,
+                animals_trawl=animals_trawl,
                 
                 # Liquidación
-                lbs_harvest_farm=clean_num(row.get('LIBRAS CAMARONERA')),
-                lbs_harvest_plant=clean_num(row.get('LIBRAS PLANTA')),
+                lbs_harvest_farm=lbs_harvest_farm,
+                lbs_harvest_plant=lbs_harvest_plant,
                 gr_harvest_farm=gr_harvest_farm,
                 gr_harvest_plant=gr_harvest_plant,
-                lbs_ha_harvest=clean_num(row.get('LBS/HA COSECHA')),
-                animals_harvest=clean_num(row.get('CAM COSECHADOS')),
+                lbs_ha_harvest=lbs_harvest_plant / clean_num(row.get('HAS')) if clean_num(row.get('HAS')) > 0 else 0.0,
+                animals_harvest=animals_harvest,
                 
                 # Feed
                 feed_lbs=clean_num(row.get('BALANCEADO ACUMULADO (LBS)')),
