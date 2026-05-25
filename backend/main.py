@@ -48,11 +48,42 @@ try:
     
     # Make sure all existing historical cycles have is_closed = True
     db = SessionLocal()
-    from .models import Cycle
+    from .models import Cycle, Pond
     open_historical = db.query(Cycle).filter(Cycle.is_closed.is_(None)).all()
     if len(open_historical) > 0:
         for c in open_historical:
             c.is_closed = True
+        db.commit()
+
+    # Auto-heal existing pools with missing sector chief values
+    pools_without_chief = db.query(Pond).filter((Pond.sector_chief == None) | (Pond.sector_chief == '')).all()
+    if len(pools_without_chief) > 0:
+        print(f"Migración: Auto-asignando jefes de sector a {len(pools_without_chief)} piscinas...")
+        sector_chiefs_map = {
+            'BARRACUDA': 'GUSTAVO CARRASCO',
+            'CATANUDA': 'VICTOR QUINTANA',
+            'CHERNA': 'SANTIAGO OBRIEN',
+            'DELFIN': 'RONNIE REYES',
+            'DORADO': 'JOSE CEDEÑO',
+            'GUATO': 'JULIO SANTOS',
+            'MANTARRAYA': 'GUSTAVO CARRASCO',
+            'MERO': 'RONNIE REYES',
+            'PAMPANO': 'GUSTAVO CARRASCO',
+            'PARGO ROJO': 'WILMER TORRES',
+            'ROBALO': 'VICTOR QUINTANA',
+            'TAMBULERO': 'ALFONSO GRUNAUER',
+            'TIBURON': 'ALFONSO GRUNAUER',
+            'TUNA': 'GUSTAVO CARRASCO',
+            'WAHOO': 'JUNIOR ESQUIVEL',
+            'COCORA': 'JEFE COCORA',
+            'MARIA': 'JEFE MARIA',
+            'CHUPADORES': 'JEFE CHUPADORES',
+            'SOLEDAD': 'JEFE SOLEDAD'
+        }
+        for p in pools_without_chief:
+            sec = (p.sector or '').upper().strip()
+            if sec in sector_chiefs_map:
+                p.sector_chief = sector_chiefs_map[sec]
         db.commit()
     db.close()
     print("Migración de base de datos completada.")
