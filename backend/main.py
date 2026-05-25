@@ -203,8 +203,25 @@ try:
         if cleanup_count > 0:
             db.commit()
             print(f"Cleanup: Eliminados {cleanup_count} ciclos duplicados activos sin usar.")
+            
+        # Check and correct survival_pct decimal format in existing Seeding and Cycle records
+        from .models import Seeding
+        seedings_to_fix = db.query(Seeding).filter(Seeding.survival_pct > 0, Seeding.survival_pct <= 1.0).all()
+        if len(seedings_to_fix) > 0:
+            for s_fix in seedings_to_fix:
+                s_fix.survival_pct = float(s_fix.survival_pct) * 100.0
+            print(f"Cleanup: Corregidos {len(seedings_to_fix)} registros de Seeding con survival_pct decimal.")
+            
+        cycles_to_fix = db.query(Cycle).filter(Cycle.survival_pct > 0, Cycle.survival_pct <= 1.0).all()
+        if len(cycles_to_fix) > 0:
+            for c_fix in cycles_to_fix:
+                c_fix.survival_pct = float(c_fix.survival_pct) * 100.0
+            print(f"Cleanup: Corregidos {len(cycles_to_fix)} registros de Cycle con survival_pct decimal.")
+            
+        if len(seedings_to_fix) > 0 or len(cycles_to_fix) > 0:
+            db.commit()
     except Exception as ex:
-        print("Error during active cycles cleanup startup:", ex)
+        print("Error during active cycles and survival_pct cleanup startup:", ex)
         db.rollback()
         
     db.close()

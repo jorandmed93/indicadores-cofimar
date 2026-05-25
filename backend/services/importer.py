@@ -168,7 +168,7 @@ def import_excel_file(file_path: str, db: Session):
                 ablation=clean_str(row.get('ABLACION')),
                 nauplio=clean_str(row.get('NAUPLIo')),
                 laboratory=clean_str(row.get('LABORATORIO')),
-                survival_pct=clean_num(row.get('sobrevivencia')),
+                survival_pct=float(clean_num(row.get('sobrevivencia')) or 0) * 100.0 if clean_num(row.get('sobrevivencia')) is not None and float(clean_num(row.get('sobrevivencia')) or 0) <= 1.0 else clean_num(row.get('sobrevivencia')),
                 pre_criadero=clean_str(row.get('PRECRIADERO')),
                 weight_gr=clean_num(row.get('w'))
             )

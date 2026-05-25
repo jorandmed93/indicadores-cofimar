@@ -1056,16 +1056,22 @@ const RegistroData: React.FC<RegistroDataProps> = ({ role }) => {
 
                   <div className="space-y-1.5">
                     <label className="text-[10px] font-mono text-cofimar-text-muted uppercase block">Aguaje *</label>
-                    <select
+                    <input
+                      type="text"
+                      required
                       value={seedingForm.aguaje}
                       onChange={(e) => setSeedingForm({ ...seedingForm, aguaje: e.target.value })}
+                      onBlur={(e) => {
+                        const val = e.target.value.trim();
+                        if (/^\d+$/.test(val)) {
+                          setSeedingForm({ ...seedingForm, aguaje: `AGUAJE ${val}` });
+                        } else {
+                          setSeedingForm({ ...seedingForm, aguaje: val.toUpperCase() });
+                        }
+                      }}
                       className="w-full bg-cofimar-bg/50 border border-cofimar-border rounded-lg px-4 py-2.5 font-mono text-sm text-cofimar-text focus:outline-none focus:border-cofimar-primary focus:ring-1 focus:ring-cofimar-primary/30 transition-all duration-200"
-                    >
-                      <option value="AGUAJE 1">AGUAJE 1</option>
-                      <option value="AGUAJE 2">AGUAJE 2</option>
-                      <option value="QUIEBRA 1">QUIEBRA 1</option>
-                      <option value="QUIEBRA 2">QUIEBRA 2</option>
-                    </select>
+                      placeholder="Ej: AGUAJE 11 o 11"
+                    />
                   </div>
 
                   <div className="space-y-1.5">
@@ -1203,16 +1209,22 @@ const RegistroData: React.FC<RegistroDataProps> = ({ role }) => {
                       </div>
                       <div className="space-y-1.5">
                         <label className="text-[10px] font-mono text-cofimar-text-muted uppercase block">Aguaje *</label>
-                        <select
+                        <input
+                          type="text"
+                          required
                           value={cycleForm.aguaje}
                           onChange={(e) => setCycleForm({ ...cycleForm, aguaje: e.target.value })}
+                          onBlur={(e) => {
+                            const val = e.target.value.trim();
+                            if (/^\d+$/.test(val)) {
+                              setCycleForm({ ...cycleForm, aguaje: `AGUAJE ${val}` });
+                            } else {
+                              setCycleForm({ ...cycleForm, aguaje: val.toUpperCase() });
+                            }
+                          }}
                           className="w-full bg-cofimar-bg/50 border border-cofimar-border rounded-lg px-4 py-2.5 font-mono text-sm text-cofimar-text focus:outline-none focus:border-cofimar-primary focus:ring-1 focus:ring-cofimar-primary/30 transition-all duration-200"
-                        >
-                          <option value="AGUAJE 1">AGUAJE 1</option>
-                          <option value="AGUAJE 2">AGUAJE 2</option>
-                          <option value="QUIEBRA 1">QUIEBRA 1</option>
-                          <option value="QUIEBRA 2">QUIEBRA 2</option>
-                        </select>
+                          placeholder="Ej: AGUAJE 11 o 11"
+                        />
                       </div>
                       <div className="space-y-1.5">
                         <label className="text-[10px] font-mono text-cofimar-text-muted uppercase block">Fecha de Cosecha *</label>
