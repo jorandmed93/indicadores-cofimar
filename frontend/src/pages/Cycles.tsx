@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import client, { API_BASE_URL } from '../api/client';
 import { 
   Loader2, Search, ArrowUpDown, ChevronLeft, ChevronRight, 
-  Download, Eye, X, Compass, CheckCircle2, AlertTriangle, XCircle
+  Download, Eye, X, Compass, CheckCircle2, AlertTriangle, XCircle, Printer
 } from 'lucide-react';
 
 interface CyclesProps {
@@ -109,7 +109,7 @@ const Cycles: React.FC<CyclesProps> = ({ setSelectedPondCode, setActiveTab }) =>
         </div>
 
         {/* Export */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 no-print">
           <a
             href={getExportUrl('csv')}
             className="flex items-center space-x-2 bg-cofimar-surface-secondary hover:bg-cofimar-surface-hover border border-cofimar-border text-cofimar-text-secondary hover:text-cofimar-text px-4 py-2.5 rounded-lg transition font-medium text-xs font-mono"
@@ -124,6 +124,13 @@ const Cycles: React.FC<CyclesProps> = ({ setSelectedPondCode, setActiveTab }) =>
             <Download className="w-3.5 h-3.5" />
             <span>EXPORTAR EXCEL</span>
           </a>
+          <button
+            onClick={() => window.print()}
+            className="flex items-center space-x-2 bg-cofimar-accent/10 hover:bg-cofimar-accent/20 border border-cofimar-border text-cofimar-text hover:text-cofimar-primary px-4 py-2.5 rounded-lg transition font-medium text-xs font-mono"
+          >
+            <Printer className="w-3.5 h-3.5" />
+            <span>EXPORTAR PDF</span>
+          </button>
         </div>
       </div>
 

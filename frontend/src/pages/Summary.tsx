@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import client from '../api/client';
-import { Loader2, BarChart3, TrendingUp, Calendar, Compass } from 'lucide-react';
+import { Loader2, BarChart3, TrendingUp, Calendar, Compass, Printer } from 'lucide-react';
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
   LineChart, Line, Legend
@@ -124,14 +124,24 @@ const Summary: React.FC = () => {
   return (
     <div className="p-8 space-y-7">
       {/* Title */}
-      <div>
-        <h1 className="text-3xl font-display font-bold text-cofimar-text flex items-center gap-3">
-          <BarChart3 className="w-8 h-8 text-cofimar-primary" />
-          Resúmenes Consolidados (Pivots)
-        </h1>
-        <p className="text-cofimar-text-muted text-sm mt-1">
-          Análisis de datos agrupados por Sector, Aguaje y Meses. <span className="text-cofimar-primary font-bold font-mono text-xs ml-2">💡 Haz clic en una fila para ver el detalle de sus ciclos</span>
-        </p>
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-display font-bold text-cofimar-text flex items-center gap-3">
+            <BarChart3 className="w-8 h-8 text-cofimar-primary" />
+            Resúmenes Consolidados (Pivots)
+          </h1>
+          <p className="text-cofimar-text-muted text-sm mt-1">
+            Análisis de datos agrupados por Sector, Aguaje y Meses. <span className="text-cofimar-primary font-bold font-mono text-xs ml-2">💡 Haz clic en una fila para ver el detalle de sus ciclos</span>
+          </p>
+        </div>
+        
+        <button
+          onClick={() => window.print()}
+          className="flex items-center space-x-2 bg-cofimar-accent/10 hover:bg-cofimar-accent/20 border border-cofimar-border text-cofimar-text hover:text-cofimar-primary px-4 py-2.5 rounded-lg transition font-medium text-xs font-mono no-print"
+        >
+          <Printer className="w-3.5 h-3.5" />
+          <span>EXPORTAR PDF</span>
+        </button>
       </div>
 
       {/* Tabs */}

@@ -8,6 +8,7 @@ import Import from './pages/Import';
 import PondDetail from './pages/PondDetail';
 import RegistroData from './pages/RegistroData';
 import Users from './pages/Users';
+import { Bitacora } from './pages/Bitacora';
 import Login from './pages/Login';
 import { 
   AlertTriangle, 
@@ -42,8 +43,11 @@ function App() {
 
   const [user, setUser] = useState<{ username: string; role: 'admin' | 'viewer' } | null>(() => {
     const stored = localStorage.getItem('cofimar-user');
+    const token = localStorage.getItem('cofimar-token');
+    // Only restore session if both user data AND token exist
+    if (!stored || !token) return null;
     try {
-      return stored ? JSON.parse(stored) : null;
+      return JSON.parse(stored);
     } catch {
       return null;
     }
@@ -60,6 +64,49 @@ function App() {
     localStorage.setItem('cofimar-theme', theme);
   }, [theme]);
 
+  const formatTimeAgo = (isoStr: string) => {
+    if (!isoStr) return '';
+    try {
+      const diff = Date.now() - new Date(isoStr).getTime();
+      const min = Math.floor(diff / 60000);
+      if (min < 1) return 'Ahora';
+      if (min < 60) return `Hace ${min} min`;
+      const hrs = Math.floor(min / 60);
+      if (hrs < 24) return `Hace ${hrs} h`;
+      const days = Math.floor(hrs / 24);
+      return `Hace ${days} d`;
+    } catch {
+      return '';
+    }
+  };
+
+  const fetchNotifications = async () => {
+    if (!user) return;
+    try {
+      const res = await client.get('/audit/notifications', { params: { limit: 20 } });
+      const apiNotifs = res.data.map((n: any) => {
+        // Extract pond code if present in title or message to enable shortcut routing
+        let pondCode = '';
+        const match = n.message.match(/piscina\s+([A-Za-z0-9\s]+)/i);
+        if (match && match[1]) {
+          pondCode = match[1].trim().toUpperCase();
+        }
+        return {
+          id: n.id,
+          type: n.severity,
+          title: n.title,
+          message: n.message,
+          time: formatTimeAgo(n.created_at),
+          pondCode,
+          read: n.is_read
+        };
+      });
+      setNotifications(apiNotifs);
+    } catch (err) {
+      console.error('Error fetching notifications:', err);
+    }
+  };
+
   // Fetch Search & Notification Data
   useEffect(() => {
     if (user) {
@@ -71,74 +118,14 @@ function App() {
       // Fetch cycles
       client.get('/cycles', { params: { limit: 100 } })
         .then(res => {
-          const cyclesData = res.data.data || [];
-          setCyclesList(cyclesData);
-
-          // Generate dynamic notifications
-          const alerts: any[] = [];
-          
-          cyclesData.forEach((c: any) => {
-            // High FCA Alert
-            if (c.fca > 1.65) {
-              alerts.push({
-                id: `fca-${c.id || c.pond_code}`,
-                type: 'warning',
-                title: 'Alerta de FCA Alto',
-                message: `Piscina ${c.pond_code} tiene un FCA de ${parseFloat(c.fca).toFixed(2)} (Excede límite de 1.65)`,
-                time: 'Hace 2 horas',
-                pondCode: c.pond_code,
-                read: false
-              });
-            }
-            // Low Survival Alert
-            if (c.survival_pct < 55) {
-              alerts.push({
-                id: `srv-${c.id || c.pond_code}`,
-                type: 'danger',
-                title: 'Baja Sobrevivencia',
-                message: `Piscina ${c.pond_code} reporta sobrevivencia de ${parseFloat(c.survival_pct).toFixed(1)}%`,
-                time: 'Hace 5 horas',
-                pondCode: c.pond_code,
-                read: false
-              });
-            }
-            // QC Weight Deviation Alert
-            const lbsDiff = (c.lbs_harvest_plant || 0) - (c.lbs_harvest_farm || 0);
-            if (Math.abs(lbsDiff) > 3000) {
-              alerts.push({
-                id: `qc-${c.id || c.pond_code}`,
-                type: 'qc',
-                title: 'Desviación de QC',
-                message: `Desviación en ${c.pond_code}: camaronera vs planta de ${Math.round(lbsDiff).toLocaleString()} lbs`,
-                time: 'Ayer',
-                pondCode: c.pond_code,
-                read: false
-              });
-            }
-          });
-
-          // Fallback welcome alerts
-          alerts.push({
-            id: 'sys-update',
-            type: 'success',
-            title: 'Sincronización Exitosa',
-            message: 'Tus repositorios y base de datos están sincronizados al 100% con GitHub.',
-            time: 'Hace 10 min',
-            read: false
-          });
-
-          alerts.push({
-            id: 'sys-welcome',
-            type: 'info',
-            title: 'Bienvenido a CofimarControl',
-            message: `Sesión iniciada correctamente como ${user.username}.`,
-            time: 'Hace 15 min',
-            read: true
-          });
-
-          setNotifications(alerts);
+          setCyclesList(res.data.data || []);
         })
         .catch(err => console.error('Error fetching search cycles:', err));
+
+      // Fetch notifications immediately & set polling
+      fetchNotifications();
+      const interval = setInterval(fetchNotifications, 15000); // Poll every 15s
+      return () => clearInterval(interval);
     }
   }, [user]);
 
@@ -185,13 +172,22 @@ function App() {
 
   const unreadCount = notifications.filter(n => !n.read).length;
 
-  const markAllNotificationsAsRead = () => {
-    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+  const markAllNotificationsAsRead = async () => {
+    try {
+      await client.post('/audit/notifications/read-all');
+      fetchNotifications();
+    } catch (err) {
+      console.error('Error marking all notifications read:', err);
+    }
   };
 
-  const handleNotificationClick = (n: any) => {
-    // Mark as read
-    setNotifications(prev => prev.map(item => item.id === n.id ? { ...item, read: true } : item));
+  const handleNotificationClick = async (n: any) => {
+    try {
+      await client.put(`/audit/notifications/${n.id}/read`);
+      fetchNotifications();
+    } catch (err) {
+      console.error('Error marking notification read:', err);
+    }
     
     // Navigate to pond if available
     if (n.pondCode) {
@@ -204,17 +200,31 @@ function App() {
 
   const role = user?.role || 'viewer';
 
-  const handleLogin = (username: string, userRole: 'admin' | 'viewer') => {
+  const handleLogin = (username: string, userRole: 'admin' | 'viewer', token?: string) => {
     const newUser = { username, role: userRole };
     setUser(newUser);
     localStorage.setItem('cofimar-user', JSON.stringify(newUser));
+    if (token) {
+      localStorage.setItem('cofimar-token', token);
+    }
   };
 
   const handleLogout = () => {
     setUser(null);
     localStorage.removeItem('cofimar-user');
+    localStorage.removeItem('cofimar-token');
     setActiveTab('dashboard');
   };
+
+  // Listen for session-expired events dispatched by the API client
+  useEffect(() => {
+    const onSessionExpired = () => {
+      setUser(null);
+      setActiveTab('dashboard');
+    };
+    window.addEventListener('cofimar-session-expired', onSessionExpired);
+    return () => window.removeEventListener('cofimar-session-expired', onSessionExpired);
+  }, []);
 
   const getTabTitle = () => {
     switch (activeTab) {
@@ -225,6 +235,7 @@ function App() {
       case 'crud': return 'Registro Data';
       case 'import': return 'Cargar Datos';
       case 'users': return 'Gestión de Usuarios';
+      case 'audit': return 'Bitácora de Cambios';
       case 'pondDetail': return `Piscina: ${selectedPondCode}`;
       default: return 'CofimarControl';
     }
@@ -256,6 +267,8 @@ function App() {
         return <RegistroData role={role} />;
       case 'users':
         return <Users />;
+      case 'audit':
+        return <Bitacora />;
       case 'pondDetail':
         return <PondDetail pondCode={selectedPondCode} onClose={() => { setActiveTab('dashboard'); setSelectedPondCode(''); }} />;
       default:

@@ -4,6 +4,8 @@ from typing import Optional, List
 from ..database import get_db
 from ..models import Pond
 from ..schemas import Pond as PondSchema, PondCreate
+from ..auth import require_admin
+from ..services.audit import log_change, create_notification
 
 router = APIRouter(prefix="/ponds", tags=["Ponds"])
 
@@ -39,7 +41,7 @@ def get_ponds(db: Session = Depends(get_db)):
     return ponds
 
 @router.post("", response_model=PondSchema)
-def create_pond(pond_in: PondCreate, db: Session = Depends(get_db)):
+def create_pond(pond_in: PondCreate, db: Session = Depends(get_db), current_user: dict = Depends(require_admin)):
     # Check if code already exists
     existing = db.query(Pond).filter(Pond.code == pond_in.code).first()
     if existing:
@@ -58,16 +60,28 @@ def create_pond(pond_in: PondCreate, db: Session = Depends(get_db)):
         db.commit()
         db.refresh(db_pond)
         
+    log_change(
+        db=db,
+        username=current_user.get("username", "admin"),
+        action="CREATE",
+        entity="pond",
+        entity_id=db_pond.code,
+        new_item=db_pond
+    )
+    
     return db_pond
 
 @router.put("/{code}", response_model=PondSchema)
-def update_pond(code: str, pond_in: PondCreate, db: Session = Depends(get_db)):
+def update_pond(code: str, pond_in: PondCreate, db: Session = Depends(get_db), current_user: dict = Depends(require_admin)):
     db_pond = db.query(Pond).filter(Pond.code == code).first()
     if not db_pond:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Pond with code {code} not found"
         )
+    from copy import copy
+    old_state = copy(db_pond)
+
     for k, v in pond_in.dict(exclude_unset=True).items():
         setattr(db_pond, k, v)
     db.commit()
@@ -75,20 +89,51 @@ def update_pond(code: str, pond_in: PondCreate, db: Session = Depends(get_db)):
     
     # Auto-propagate sector chief to other ponds in the same sector
     if db_pond.sector and db_pond.sector_chief:
+        # Check if chief actually changed to alert
+        if old_state.sector_chief != db_pond.sector_chief:
+            create_notification(
+                db=db,
+                title="👔 Cambio de Jefe de Sector",
+                message=f"El Jefe del Sector {db_pond.sector} ha sido actualizado de '{old_state.sector_chief}' a '{db_pond.sector_chief}'.",
+                severity="info"
+            )
         db.query(Pond).filter(Pond.sector == db_pond.sector).update({Pond.sector_chief: db_pond.sector_chief})
         db.commit()
         db.refresh(db_pond)
         
+    log_change(
+        db=db,
+        username=current_user.get("username", "admin"),
+        action="UPDATE",
+        entity="pond",
+        entity_id=db_pond.code,
+        old_item=old_state,
+        new_item=db_pond
+    )
+        
     return db_pond
 
 @router.delete("/{code}")
-def delete_pond(code: str, db: Session = Depends(get_db)):
+def delete_pond(code: str, db: Session = Depends(get_db), current_user: dict = Depends(require_admin)):
     db_pond = db.query(Pond).filter(Pond.code == code).first()
     if not db_pond:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Pond with code {code} not found"
         )
+    from copy import copy
+    old_state = copy(db_pond)
+
     db.delete(db_pond)
     db.commit()
+
+    log_change(
+        db=db,
+        username=current_user.get("username", "admin"),
+        action="DELETE",
+        entity="pond",
+        entity_id=old_state.code,
+        old_item=old_state
+    )
+
     return {"message": "Pond deleted successfully"}

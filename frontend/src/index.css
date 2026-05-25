@@ -127,3 +127,73 @@ input:-webkit-autofill:active {
   background-color: var(--cofimar-badge-bg);
   color: var(--cofimar-badge-text);
 }
+
+/* ==========================================
+   HIGH-FIDELITY PRINT RULES FOR PDF REPORTS
+   ========================================== */
+@media print {
+  body, html {
+    background: #FFFFFF !important;
+    color: #000000 !important;
+    font-size: 11pt !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  
+  /* Hide UI wrapper layouts, sidebars, headers, search filters */
+  aside, 
+  header, 
+  nav, 
+  button, 
+  select, 
+  input, 
+  .flex-bg-switcher, 
+  .theme-toggle, 
+  .bell-badge,
+  .no-print {
+    display: none !important;
+  }
+  
+  /* Expand main container to print margins */
+  main, 
+  .flex-1,
+  .p-8,
+  .p-5 {
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    border: none !important;
+    box-shadow: none !important;
+    background: transparent !important;
+  }
+
+  /* Force background styling & colored borders */
+  .glass-card, 
+  .bg-cofimar-surface-secondary, 
+  .bg-cofimar-surface,
+  .bg-cofimar-panel-bg,
+  .bg-cofimar-surface-active {
+    background-color: #F8F9FA !important;
+    border: 1px solid #DEE2E6 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    box-shadow: none !important;
+  }
+  
+  /* Charts formatting */
+  .recharts-responsive-container {
+    width: 100% !important;
+    height: 350px !important;
+  }
+
+  /* Force page breaks neatly */
+  tr, .glass-card {
+    page-break-inside: avoid !important;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    color: #000000 !important;
+    page-break-after: avoid !important;
+  }
+}

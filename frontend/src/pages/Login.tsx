@@ -3,7 +3,7 @@ import { Compass, Eye, EyeOff, Sun, Moon, AlertTriangle, LogIn, ShieldAlert, Key
 import client from '../api/client';
 
 interface LoginProps {
-  onLogin: (username: string, role: 'admin' | 'viewer') => void;
+  onLogin: (username: string, role: 'admin' | 'viewer', token?: string) => void;
   theme: 'light' | 'dark';
   setTheme: (theme: 'light' | 'dark') => void;
 }
@@ -25,7 +25,7 @@ const Login: React.FC<LoginProps> = ({ onLogin, theme, setTheme }) => {
         username: username.trim(),
         password: password.trim()
       });
-      onLogin(res.data.username, res.data.role);
+      onLogin(res.data.username, res.data.role, res.data.access_token);
     } catch (err: any) {
       console.error(err);
       setError(

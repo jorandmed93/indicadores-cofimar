@@ -5,6 +5,8 @@ from typing import Optional, List
 from ..database import get_db
 from ..models import Seeding
 from ..schemas import Seeding as SeedingSchema, SeedingCreate
+from ..auth import require_admin
+from ..services.audit import log_change, create_notification
 
 router = APIRouter(prefix="/seedings", tags=["Seedings"])
 
@@ -42,7 +44,7 @@ def get_seedings(
     return result[:limit]
 
 @router.post("", response_model=SeedingSchema)
-def create_seeding(seeding_in: SeedingCreate, db: Session = Depends(get_db)):
+def create_seeding(seeding_in: SeedingCreate, db: Session = Depends(get_db), current_user: dict = Depends(require_admin)):
     from ..models import Cycle, Pond
     # 1. Check if there's already an active (open) cycle for this pool
     active_cycle = db.query(Cycle).filter(
@@ -88,31 +90,74 @@ def create_seeding(seeding_in: SeedingCreate, db: Session = Depends(get_db)):
     )
     db.add(db_cycle)
     db.commit()
+
+    log_change(
+        db=db,
+        username=current_user.get("username", "admin"),
+        action="CREATE",
+        entity="seeding",
+        entity_id=db_seeding.id,
+        new_item=db_seeding
+    )
+    
+    create_notification(
+        db=db,
+        title="🌱 Nueva Siembra Registrada",
+        message=f"Se ha sembrado la piscina {db_seeding.pond_code} con {db_seeding.animals:,} larvas en {db_seeding.aguaje}.",
+        severity="success"
+    )
     
     return db_seeding
 
 @router.put("/{id}", response_model=SeedingSchema)
-def update_seeding(id: int, seeding_in: SeedingCreate, db: Session = Depends(get_db)):
+def update_seeding(id: int, seeding_in: SeedingCreate, db: Session = Depends(get_db), current_user: dict = Depends(require_admin)):
     db_seeding = db.query(Seeding).filter(Seeding.id == id).first()
     if not db_seeding:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Seeding with ID {id} not found"
         )
+    from copy import copy
+    old_state = copy(db_seeding)
+
     for k, v in seeding_in.dict(exclude_unset=True).items():
         setattr(db_seeding, k, v)
     db.commit()
     db.refresh(db_seeding)
+
+    log_change(
+        db=db,
+        username=current_user.get("username", "admin"),
+        action="UPDATE",
+        entity="seeding",
+        entity_id=db_seeding.id,
+        old_item=old_state,
+        new_item=db_seeding
+    )
+
     return db_seeding
 
 @router.delete("/{id}")
-def delete_seeding(id: int, db: Session = Depends(get_db)):
+def delete_seeding(id: int, db: Session = Depends(get_db), current_user: dict = Depends(require_admin)):
     db_seeding = db.query(Seeding).filter(Seeding.id == id).first()
     if not db_seeding:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Seeding with ID {id} not found"
         )
+    from copy import copy
+    old_state = copy(db_seeding)
+
     db.delete(db_seeding)
     db.commit()
+
+    log_change(
+        db=db,
+        username=current_user.get("username", "admin"),
+        action="DELETE",
+        entity="seeding",
+        entity_id=old_state.id,
+        old_item=old_state
+    )
+
     return {"message": "Seeding deleted successfully"}

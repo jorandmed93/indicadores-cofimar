@@ -7,7 +7,9 @@ import time
 from ..database import get_db
 from ..models import User
 from ..schemas import User as UserSchema, UserCreate, UserUpdate, UserLogin
-from ..security import hash_password, verify_password
+from ..security import hash_password, verify_password, create_access_token
+from ..auth import require_admin
+from ..services.audit import log_change, create_notification
 
 router = APIRouter(prefix="/users", tags=["Users"])
 
@@ -15,11 +17,11 @@ router = APIRouter(prefix="/users", tags=["Users"])
 FAILED_LOGIN_ATTEMPTS = defaultdict(lambda: {"attempts": 0, "lockout_until": 0.0})
 
 @router.get("", response_model=List[UserSchema])
-def get_users(db: Session = Depends(get_db)):
+def get_users(db: Session = Depends(get_db), current_user: dict = Depends(require_admin)):
     return db.query(User).order_by(User.id).all()
 
 @router.post("", response_model=UserSchema)
-def create_user(user_in: UserCreate, db: Session = Depends(get_db)):
+def create_user(user_in: UserCreate, db: Session = Depends(get_db), current_user: dict = Depends(require_admin)):
     # Check if username already exists
     existing = db.query(User).filter(User.username == user_in.username).first()
     if existing:
@@ -35,16 +37,37 @@ def create_user(user_in: UserCreate, db: Session = Depends(get_db)):
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
+    
+    # Log audit change & notify
+    log_change(
+        db=db,
+        username=current_user.get("username", "admin"),
+        action="CREATE",
+        entity="user",
+        entity_id=db_user.id,
+        new_item=db_user
+    )
+    create_notification(
+        db=db,
+        title="👤 Nuevo Usuario Registrado",
+        message=f"Se ha registrado el nuevo usuario '{db_user.username}' con rol de '{db_user.role}'.",
+        severity="success"
+    )
+    
     return db_user
 
 @router.put("/{user_id}", response_model=UserSchema)
-def update_user(user_id: int, user_in: UserUpdate, db: Session = Depends(get_db)):
+def update_user(user_id: int, user_in: UserUpdate, db: Session = Depends(get_db), current_user: dict = Depends(require_admin)):
     db_user = db.query(User).filter(User.id == user_id).first()
     if not db_user:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Usuario con ID {user_id} no encontrado."
         )
+    # Clone user state before update to log differences
+    from copy import copy
+    old_state = copy(db_user)
+
     for k, v in user_in.dict(exclude_unset=True).items():
         if v is not None:
             if k == 'password':
@@ -53,10 +76,22 @@ def update_user(user_id: int, user_in: UserUpdate, db: Session = Depends(get_db)
                 setattr(db_user, k, v)
     db.commit()
     db.refresh(db_user)
+
+    # Log audit change
+    log_change(
+        db=db,
+        username=current_user.get("username", "admin"),
+        action="UPDATE",
+        entity="user",
+        entity_id=db_user.id,
+        old_item=old_state,
+        new_item=db_user
+    )
+
     return db_user
 
 @router.delete("/{user_id}")
-def delete_user(user_id: int, db: Session = Depends(get_db)):
+def delete_user(user_id: int, db: Session = Depends(get_db), current_user: dict = Depends(require_admin)):
     db_user = db.query(User).filter(User.id == user_id).first()
     if not db_user:
         raise HTTPException(
@@ -73,8 +108,29 @@ def delete_user(user_id: int, db: Session = Depends(get_db)):
                 detail="No se puede eliminar el último administrador del sistema."
             )
 
+    # Save user info for log before delete
+    from copy import copy
+    old_state = copy(db_user)
+
     db.delete(db_user)
     db.commit()
+
+    # Log audit change & notify
+    log_change(
+        db=db,
+        username=current_user.get("username", "admin"),
+        action="DELETE",
+        entity="user",
+        entity_id=old_state.id,
+        old_item=old_state
+    )
+    create_notification(
+        db=db,
+        title="🗑️ Usuario Eliminado",
+        message=f"El usuario '{old_state.username}' ha sido eliminado del sistema.",
+        severity="info"
+    )
+
     return {"message": "Usuario eliminado exitosamente"}
 
 @router.post("/login")
@@ -97,11 +153,13 @@ def login_user(login_in: UserLogin, db: Session = Depends(get_db)):
     # 3. Handle user verification (secure hash or clean fallback)
     success = False
     role = "viewer"
+    resolved_username = login_in.username
     
     if user:
         if verify_password(login_in.password, user.password):
             success = True
             role = user.role
+            resolved_username = user.username
     else:
         # Fallback to standard hardcoded credentials to prevent lockouts during setup
         p_clean = login_in.password.strip()
@@ -130,4 +188,13 @@ def login_user(login_in: UserLogin, db: Session = Depends(get_db)):
             
     # Reset attempts on successful login
     FAILED_LOGIN_ATTEMPTS[username] = {"attempts": 0, "lockout_until": 0.0}
-    return {"username": login_in.username, "role": role}
+    
+    # Generate JWT token
+    token = create_access_token(resolved_username, role)
+    
+    return {
+        "username": resolved_username,
+        "role": role,
+        "access_token": token,
+        "token_type": "bearer"
+    }

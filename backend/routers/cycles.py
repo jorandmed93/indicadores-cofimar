@@ -10,6 +10,8 @@ from datetime import date
 from ..database import get_db
 from ..models import Cycle
 from ..schemas import Cycle as CycleSchema, CycleListResponse
+from ..auth import require_admin
+from ..services.audit import log_change, create_notification, check_cycle_thresholds
 
 router = APIRouter(prefix="/cycles", tags=["Cycles"])
 
@@ -219,7 +221,7 @@ def get_cycle_detail(id: int, db: Session = Depends(get_db)):
 from ..schemas import CycleCreate
 
 @router.post("", response_model=CycleSchema)
-def create_cycle(cycle_in: CycleCreate, db: Session = Depends(get_db)):
+def create_cycle(cycle_in: CycleCreate, db: Session = Depends(get_db), current_user: dict = Depends(require_admin)):
     db_cycle = Cycle(**cycle_in.dict())
     
     # Run calculation to compute KPIs immediately
@@ -229,16 +231,30 @@ def create_cycle(cycle_in: CycleCreate, db: Session = Depends(get_db)):
     db.add(db_cycle)
     db.commit()
     db.refresh(db_cycle)
+    
+    log_change(
+        db=db,
+        username=current_user.get("username", "admin"),
+        action="CREATE",
+        entity="cycle",
+        entity_id=db_cycle.id,
+        new_item=db_cycle
+    )
+    check_cycle_thresholds(db, db_cycle)
+    
     return db_cycle
 
 @router.put("/{id}", response_model=CycleSchema)
-def update_cycle(id: int, cycle_in: CycleCreate, db: Session = Depends(get_db)):
+def update_cycle(id: int, cycle_in: CycleCreate, db: Session = Depends(get_db), current_user: dict = Depends(require_admin)):
     db_cycle = db.query(Cycle).filter(Cycle.id == id).first()
     if not db_cycle:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Cycle with ID {id} not found"
         )
+    from copy import copy
+    old_state = copy(db_cycle)
+
     for k, v in cycle_in.dict(exclude_unset=True).items():
         setattr(db_cycle, k, v)
         
@@ -247,16 +263,41 @@ def update_cycle(id: int, cycle_in: CycleCreate, db: Session = Depends(get_db)):
     
     db.commit()
     db.refresh(db_cycle)
+
+    log_change(
+        db=db,
+        username=current_user.get("username", "admin"),
+        action="UPDATE",
+        entity="cycle",
+        entity_id=db_cycle.id,
+        old_item=old_state,
+        new_item=db_cycle
+    )
+    check_cycle_thresholds(db, db_cycle)
+    
     return db_cycle
 
 @router.delete("/{id}")
-def delete_cycle(id: int, db: Session = Depends(get_db)):
+def delete_cycle(id: int, db: Session = Depends(get_db), current_user: dict = Depends(require_admin)):
     db_cycle = db.query(Cycle).filter(Cycle.id == id).first()
     if not db_cycle:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Cycle with ID {id} not found"
         )
+    from copy import copy
+    old_state = copy(db_cycle)
+
     db.delete(db_cycle)
     db.commit()
+
+    log_change(
+        db=db,
+        username=current_user.get("username", "admin"),
+        action="DELETE",
+        entity="cycle",
+        entity_id=old_state.id,
+        old_item=old_state
+    )
+
     return {"message": "Cycle deleted successfully"}

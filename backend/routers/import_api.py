@@ -7,13 +7,15 @@ import tempfile
 from ..database import get_db
 from ..services.importer import import_excel_file
 from ..schemas import ImportResponse
+from ..auth import require_admin
 
 router = APIRouter(prefix="/import", tags=["Import"])
 
 @router.post("", response_model=ImportResponse)
 def import_excel(
     file: UploadFile = File(...),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(require_admin)
 ):
     # Verify file extension
     filename = file.filename or ""

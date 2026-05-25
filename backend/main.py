@@ -3,7 +3,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from .database import engine, Base, SessionLocal
 from .models import Pond, User
-from .routers import cycles, summary, harvests, catalog, import_api, ponds, seedings, users
+from .routers import cycles, summary, harvests, catalog, import_api, ponds, seedings, users, audit_api
 
 # Create database tables automatically
 Base.metadata.create_all(bind=engine)
@@ -308,6 +308,7 @@ app.include_router(import_api.router, prefix="/api")
 app.include_router(ponds.router, prefix="/api")
 app.include_router(seedings.router, prefix="/api")
 app.include_router(users.router, prefix="/api")
+app.include_router(audit_api.router, prefix="/api")
 
 @app.get("/")
 def read_root():

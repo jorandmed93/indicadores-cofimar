@@ -7,6 +7,8 @@ from datetime import date
 from ..database import get_db
 from ..models import Harvest
 from ..schemas import HarvestListResponse
+from ..auth import require_admin
+from ..services.audit import log_change, create_notification, check_cycle_thresholds
 
 router = APIRouter(prefix="/harvests", tags=["Harvests"])
 
@@ -72,7 +74,7 @@ def get_harvests(
 from ..schemas import HarvestCreate, Harvest as HarvestSchema
 
 @router.post("", response_model=HarvestSchema)
-def create_harvest(harvest_in: HarvestCreate, db: Session = Depends(get_db)):
+def create_harvest(harvest_in: HarvestCreate, db: Session = Depends(get_db), current_user: dict = Depends(require_admin)):
     from ..models import Cycle, Pond
     from ..services.kpi_calculator import calc_kpis
     
@@ -155,21 +157,59 @@ def create_harvest(harvest_in: HarvestCreate, db: Session = Depends(get_db)):
         active_cycle.feed_lbs = db_harvest.feed_lbs or 0.0
         active_cycle.feed_supplier = db_harvest.feed_supplier
         active_cycle.feeding_mode = db_harvest.feeding_mode or "AUTOMATICA"
-        active_cycle.is_closed = True # CLOSE CYCLE
-        
         calc_kpis(active_cycle)
         db.commit()
+
+        # Log Cycle Update (Closed)
+        log_change(
+            db=db,
+            username=current_user.get("username", "admin"),
+            action="UPDATE",
+            entity="cycle",
+            entity_id=active_cycle.id,
+            new_item=active_cycle
+        )
+        
+        # Notify Cycle closed
+        create_notification(
+            db=db,
+            title="🏁 Ciclo Productivo Cerrado",
+            message=f"Se ha completado la cosecha final de la piscina {active_cycle.pond_code}. Total Libras: {int(active_cycle.total_lbs or 0):,} | FCA: {float(active_cycle.fca or 0):.2f}.",
+            severity="success"
+        )
+        
+        # Check thresholds for FCA and survival
+        check_cycle_thresholds(db, active_cycle)
+        
+    log_change(
+        db=db,
+        username=current_user.get("username", "admin"),
+        action="CREATE",
+        entity="harvest",
+        entity_id=db_harvest.id,
+        new_item=db_harvest
+    )
+
+    create_notification(
+        db=db,
+        title="🎣 Registro de Cosecha",
+        message=f"Se registró {db_harvest.activity} en piscina {db_harvest.pond_code} con {int(db_harvest.lbs_plant or 0):,} Lbs de planta.",
+        severity="info"
+    )
         
     return db_harvest
 
 @router.put("/{id}", response_model=HarvestSchema)
-def update_harvest(id: int, harvest_in: HarvestCreate, db: Session = Depends(get_db)):
+def update_harvest(id: int, harvest_in: HarvestCreate, db: Session = Depends(get_db), current_user: dict = Depends(require_admin)):
     db_harvest = db.query(Harvest).filter(Harvest.id == id).first()
     if not db_harvest:
         raise HTTPException(
             status_code=404,
             detail=f"Harvest with ID {id} not found"
         )
+    from copy import copy
+    old_state = copy(db_harvest)
+
     for k, v in harvest_in.dict(exclude_unset=True).items():
         setattr(db_harvest, k, v)
         
@@ -184,16 +224,40 @@ def update_harvest(id: int, harvest_in: HarvestCreate, db: Session = Depends(get
         
     db.commit()
     db.refresh(db_harvest)
+
+    log_change(
+        db=db,
+        username=current_user.get("username", "admin"),
+        action="UPDATE",
+        entity="harvest",
+        entity_id=db_harvest.id,
+        old_item=old_state,
+        new_item=db_harvest
+    )
+
     return db_harvest
 
 @router.delete("/{id}")
-def delete_harvest(id: int, db: Session = Depends(get_db)):
+def delete_harvest(id: int, db: Session = Depends(get_db), current_user: dict = Depends(require_admin)):
     db_harvest = db.query(Harvest).filter(Harvest.id == id).first()
     if not db_harvest:
         raise HTTPException(
             status_code=404,
             detail=f"Harvest with ID {id} not found"
         )
+    from copy import copy
+    old_state = copy(db_harvest)
+
     db.delete(db_harvest)
     db.commit()
+
+    log_change(
+        db=db,
+        username=current_user.get("username", "admin"),
+        action="DELETE",
+        entity="harvest",
+        entity_id=old_state.id,
+        old_item=old_state
+    )
+
     return {"message": "Harvest deleted successfully"}

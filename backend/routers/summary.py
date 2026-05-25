@@ -237,12 +237,102 @@ def get_trends(
     # Clean up response to match Pydantic schema (removing the min_date helper)
     cleaned_response = []
     for x in response:
-        cleaned_response.append({
-            "group_key": x["group_key"],
-            "avg_lbs_ha": x["avg_lbs_ha"],
-            "avg_fca": x["avg_fca"],
-            "avg_survival": x["avg_survival"],
-            "cycle_count": x["cycle_count"]
-        })
+      cleaned_response.append({
+          "group_key": x["group_key"],
+          "avg_lbs_ha": x["avg_lbs_ha"],
+          "avg_fca": x["avg_fca"],
+          "avg_survival": x["avg_survival"],
+          "cycle_count": x["cycle_count"]
+      })
 
     return cleaned_response
+
+@router.get("/compare-years")
+def compare_years(
+    db: Session = Depends(get_db),
+    sector: Optional[str] = Query(None)
+):
+    # 1. Overall stats by year
+    query_2025 = db.query(
+        func.avg(Cycle.lbs_ha).label("avg_lbs_ha"),
+        func.avg(Cycle.fca).label("avg_fca"),
+        func.avg(Cycle.survival_pct).label("avg_survival"),
+        func.count(Cycle.id).label("cycle_count")
+    ).filter(Cycle.year == 2025)
+
+    query_2026 = db.query(
+        func.avg(Cycle.lbs_ha).label("avg_lbs_ha"),
+        func.avg(Cycle.fca).label("avg_fca"),
+        func.avg(Cycle.survival_pct).label("avg_survival"),
+        func.count(Cycle.id).label("cycle_count")
+    ).filter(Cycle.year == 2026)
+
+    if sector:
+        query_2025 = query_2025.filter(Cycle.sector == sector)
+        query_2026 = query_2026.filter(Cycle.sector == sector)
+
+    res_2025 = query_2025.first()
+    res_2026 = query_2026.first()
+
+    overall = {
+        "2025": {
+            "avg_lbs_ha": float(res_2025.avg_lbs_ha or 0),
+            "avg_fca": float(res_2025.avg_fca or 0),
+            "avg_survival": float(res_2025.avg_survival or 0),
+            "cycle_count": int(res_2025.cycle_count or 0)
+        },
+        "2026": {
+            "avg_lbs_ha": float(res_2026.avg_lbs_ha or 0),
+            "avg_fca": float(res_2026.avg_fca or 0),
+            "avg_survival": float(res_2026.avg_survival or 0),
+            "cycle_count": int(res_2026.cycle_count or 0)
+        }
+    }
+
+    # 2. Monthly details side-by-side
+    months = ["ENERO", "FEBRERO", "MARZO", "ABRIL", "MAYO", "JUNIO", "JULIO", "AGOSTO", "SEPTIEMBRE", "OCTUBRE", "NOVIEMBRE", "DICIEMBRE"]
+    
+    monthly_query = db.query(
+        Cycle.year.label("year"),
+        Cycle.month.label("month"),
+        func.avg(Cycle.lbs_ha).label("avg_lbs_ha"),
+        func.avg(Cycle.fca).label("avg_fca"),
+        func.avg(Cycle.survival_pct).label("avg_survival")
+    )
+    if sector:
+        monthly_query = monthly_query.filter(Cycle.sector == sector)
+        
+    monthly_results = monthly_query.group_by(Cycle.year, Cycle.month).all()
+    
+    # Organize in dict
+    breakdown = {}
+    for m in months:
+        breakdown[m] = {
+            "2025": {"avg_lbs_ha": 0.0, "avg_fca": 0.0, "avg_survival": 0.0},
+            "2026": {"avg_lbs_ha": 0.0, "avg_fca": 0.0, "avg_survival": 0.0}
+        }
+        
+    for r in monthly_results:
+        if not r.month or not r.year:
+            continue
+        m_upper = r.month.upper().strip()
+        if m_upper in breakdown and str(r.year) in ["2025", "2026"]:
+            breakdown[m_upper][str(r.year)] = {
+                "avg_lbs_ha": float(r.avg_lbs_ha or 0),
+                "avg_fca": float(r.avg_fca or 0),
+                "avg_survival": float(r.avg_survival or 0)
+            }
+            
+    # Convert breakdown to clean list
+    breakdown_list = []
+    for m in months:
+        breakdown_list.append({
+            "month": m,
+            "2025": breakdown[m]["2025"],
+            "2026": breakdown[m]["2026"]
+        })
+
+    return {
+        "overall": overall,
+        "monthly": breakdown_list
+    }
