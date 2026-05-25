@@ -35,7 +35,7 @@ try:
     # Make sure all existing historical cycles have is_closed = True
     db = SessionLocal()
     from .models import Cycle
-    open_historical = db.query(Cycle).filter(Cycle.is_closed == None).all()
+    open_historical = db.query(Cycle).filter(Cycle.is_closed.is_(None)).all()
     if len(open_historical) > 0:
         for c in open_historical:
             c.is_closed = True
@@ -74,6 +74,108 @@ try:
     db.close()
 except Exception as e:
     print(f"Nota al verificar base de datos: {e}")
+
+# Auto-upgrade/heal cycle records from seedings
+try:
+    db = SessionLocal()
+    from .models import Seeding, Cycle, Pond, Harvest
+    from .services.kpi_calculator import calc_kpis
+    all_seedings = db.query(Seeding).all()
+    reconstructed_count = 0
+    for s in all_seedings:
+        # Check if a cycle already exists for this pond and seeding date
+        if s.seeding_date is None or s.pond_code is None:
+            continue
+        cycle = db.query(Cycle).filter(
+            Cycle.pond_code == s.pond_code,
+            Cycle.seeding_date == s.seeding_date
+        ).first()
+        
+        if not cycle:
+            pond = db.query(Pond).filter(Pond.code == s.pond_code).first()
+            hectares = pond.hectares if pond else None
+            sector = pond.sector if pond else None
+            certification = pond.certification if pond else None
+            pond_name = s.pond_code.split(" ")[1] if " " in s.pond_code else s.pond_code
+            
+            # Check if there is a PESCA after this seeding date
+            pesca = db.query(Harvest).filter(
+                Harvest.pond_code == s.pond_code,
+                Harvest.harvest_date >= s.seeding_date,
+                Harvest.activity == 'PESCA'
+            ).order_by(Harvest.harvest_date.asc()).first()
+            
+            is_closed = pesca is not None
+            harvest_date = pesca.harvest_date if pesca else None
+            
+            # Sum any raleos
+            raleos_query = db.query(Harvest).filter(
+                Harvest.pond_code == s.pond_code,
+                Harvest.harvest_date >= s.seeding_date,
+                Harvest.activity == 'RALEO'
+            )
+            if harvest_date:
+                raleos_query = raleos_query.filter(Harvest.harvest_date <= harvest_date)
+            raleos = raleos_query.all()
+            
+            lbs_trawl_farm = sum(float(r.lbs_farm or 0) for r in raleos) if raleos else 0.0
+            lbs_trawl_plant = sum(float(r.lbs_plant or 0) for r in raleos) if raleos else 0.0
+            animals_trawl = sum(float(r.animals or 0) for r in raleos) if raleos else 0.0
+            
+            gr_farm_list = [float(r.gr_farm or 0) for r in raleos if (r.gr_farm or 0) > 0]
+            gr_plant_list = [float(r.gr_plant or 0) for r in raleos if (r.gr_plant or 0) > 0]
+            gr_trawl_farm = sum(gr_farm_list) / len(gr_farm_list) if len(gr_farm_list) > 0 else 0.0
+            gr_trawl_plant = sum(gr_plant_list) / len(gr_plant_list) if len(gr_plant_list) > 0 else 0.0
+            
+            db_cycle = Cycle(
+                pond_code=s.pond_code,
+                pond_name=pond_name,
+                sector=sector,
+                hectares=hectares,
+                certification=certification,
+                seeding_date=s.seeding_date,
+                animals_seeded=s.animals,
+                seeding_weight=s.weight_gr,
+                laboratory=s.laboratory,
+                nauplio=s.nauplio,
+                aguaje=s.aguaje,
+                is_closed=is_closed,
+                harvest_date=harvest_date,
+                lbs_trawl_farm=lbs_trawl_farm,
+                lbs_trawl_plant=lbs_trawl_plant,
+                gr_trawl_farm=gr_trawl_farm,
+                gr_trawl_plant=gr_trawl_plant,
+                lbs_ha_trawl=lbs_trawl_plant / float(hectares or 1.0),
+                animals_trawl=animals_trawl
+            )
+            
+            if pesca:
+                db_cycle.lbs_harvest_farm = pesca.lbs_farm
+                db_cycle.lbs_harvest_plant = pesca.lbs_plant
+                db_cycle.gr_harvest_farm = pesca.gr_farm
+                db_cycle.gr_harvest_plant = pesca.gr_plant
+                db_cycle.lbs_ha_harvest = float(pesca.lbs_plant or 0) / float(hectares or 1.0)
+                db_cycle.animals_harvest = pesca.animals
+                db_cycle.feed_lbs = pesca.feed_lbs or 0.0
+                db_cycle.feed_supplier = pesca.feed_supplier
+                db_cycle.feeding_mode = pesca.feeding_mode or "AUTOMATICA"
+                if s.seeding_date and pesca.harvest_date:
+                    db_cycle.days = (pesca.harvest_date - s.seeding_date).days
+                db_cycle.year = pesca.harvest_date.year
+                db_cycle.month = pesca.month
+                calc_kpis(db_cycle)
+                
+            db.add(db_cycle)
+            reconstructed_count += 1
+            
+    if reconstructed_count > 0:
+        db.commit()
+        print(f"Self-healing: Reconstruidos {reconstructed_count} ciclos de acuicultura faltantes desde Siembras.")
+    else:
+        print("Autocuración de ciclos: Todos los registros de siembra tienen su ciclo correspondiente.")
+    db.close()
+except Exception as e:
+    print(f"Error al ejecutar autocuración de ciclos: {e}")
 
 app = FastAPI(
     title="Sistema de Indicadores Acuícolas 2026",
