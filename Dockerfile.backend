@@ -1,0 +1,22 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    libpq-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY backend/requirements.txt ./requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy the entire backend package preserving structure for relative imports
+COPY backend/ ./backend/
+
+# Copy the Excel seed file to the app root (accessible as ../BASE... from backend/)
+COPY "BASE INDICADORES 2026.xlsm" ./
+
+EXPOSE 8000
+
+# Use shell form so Railway's $PORT env var is expanded at runtime
+CMD uvicorn backend.main:app --host 0.0.0.0 --port ${PORT:-8000}
