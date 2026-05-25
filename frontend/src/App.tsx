@@ -7,6 +7,7 @@ import Harvests from './pages/Harvests';
 import Import from './pages/Import';
 import PondDetail from './pages/PondDetail';
 import RegistroData from './pages/RegistroData';
+import Users from './pages/Users';
 import Login from './pages/Login';
 import { 
   AlertTriangle, 
@@ -223,6 +224,7 @@ function App() {
       case 'harvests': return 'Cosechas & QC';
       case 'crud': return 'Registro Data';
       case 'import': return 'Cargar Datos';
+      case 'users': return 'Gestión de Usuarios';
       case 'pondDetail': return `Piscina: ${selectedPondCode}`;
       default: return 'CofimarControl';
     }
@@ -252,6 +254,8 @@ function App() {
         return <Import role={role} />;
       case 'crud':
         return <RegistroData role={role} />;
+      case 'users':
+        return <Users />;
       case 'pondDetail':
         return <PondDetail pondCode={selectedPondCode} onClose={() => { setActiveTab('dashboard'); setSelectedPondCode(''); }} />;
       default:

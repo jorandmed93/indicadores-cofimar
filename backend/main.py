@@ -2,8 +2,8 @@ import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from .database import engine, Base, SessionLocal
-from .models import Pond
-from .routers import cycles, summary, harvests, catalog, import_api, ponds, seedings
+from .models import Pond, User
+from .routers import cycles, summary, harvests, catalog, import_api, ponds, seedings, users
 
 # Create database tables automatically
 Base.metadata.create_all(bind=engine)
@@ -119,6 +119,22 @@ try:
     db.close()
 except Exception as e:
     print(f"Nota al verificar base de datos: {e}")
+
+# Auto-seed default users if empty
+try:
+    db = SessionLocal()
+    from .models import User
+    if db.query(User).count() == 0:
+        print("Migración: Creando usuarios administradores y lectores por defecto...")
+        admin = User(username="admin", password="admin", role="admin")
+        lector = User(username="lector", password="lector", role="viewer")
+        db.add(admin)
+        db.add(lector)
+        db.commit()
+        print("Migración: Usuarios por defecto creados.")
+    db.close()
+except Exception as e:
+    print(f"Nota al verificar tabla de usuarios: {e}")
 
 # Auto-upgrade/heal cycle records from seedings
 try:
@@ -290,6 +306,7 @@ app.include_router(catalog.router, prefix="/api")
 app.include_router(import_api.router, prefix="/api")
 app.include_router(ponds.router, prefix="/api")
 app.include_router(seedings.router, prefix="/api")
+app.include_router(users.router, prefix="/api")
 
 @app.get("/")
 def read_root():

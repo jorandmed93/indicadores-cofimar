@@ -114,3 +114,11 @@ class Seeding(Base):
     pre_criadero = Column(String(50), nullable=True)
     weight_gr = Column(Numeric(8, 3), nullable=True)
     dry_days = Column(Integer, nullable=True)
+
+class User(Base):
+    __tablename__ = "users"
+
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
+    username = Column(String(50), unique=True, index=True, nullable=False)
+    password = Column(String(100), nullable=False)
+    role = Column(String(20), nullable=False) # 'admin' or 'viewer'

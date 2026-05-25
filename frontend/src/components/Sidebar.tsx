@@ -9,7 +9,8 @@ import {
   Droplet,
   Settings,
   LogOut,
-  Key
+  Key,
+  Users
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -54,6 +55,7 @@ const Sidebar: React.FC<SidebarProps> = ({
       items: [
         { id: 'crud', label: 'Registro Data', icon: Settings },
         { id: 'import', label: 'Cargar Datos', icon: FileSpreadsheet },
+        ...(role === 'admin' ? [{ id: 'users', label: 'Gestión Usuarios', icon: Users }] : [])
       ]
     }
   ];

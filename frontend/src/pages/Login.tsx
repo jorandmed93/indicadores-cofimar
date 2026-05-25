@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Compass, Eye, EyeOff, Sun, Moon, AlertTriangle, LogIn } from 'lucide-react';
+import client from '../api/client';
 
 interface LoginProps {
   onLogin: (username: string, role: 'admin' | 'viewer') => void;
@@ -14,24 +15,26 @@ const Login: React.FC<LoginProps> = ({ onLogin, theme, setTheme }) => {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     setLoading(true);
 
-    setTimeout(() => {
-      const uClean = username.trim().toLowerCase();
-      const pClean = password.trim();
-
-      if ((uClean === 'admin' || uClean === 'administrador') && (pClean === 'admin' || pClean === 'admin2026')) {
-        onLogin(username, 'admin');
-      } else if ((uClean === 'lector' || uClean === 'visitante') && (pClean === 'lector' || pClean === 'lector2026')) {
-        onLogin(username, 'viewer');
-      } else {
-        setError('Usuario o contraseña incorrectos. Por favor, intente nuevamente.');
-        setLoading(false);
-      }
-    }, 600);
+    try {
+      const res = await client.post('/users/login', {
+        username: username.trim(),
+        password: password.trim()
+      });
+      onLogin(res.data.username, res.data.role);
+    } catch (err: any) {
+      console.error(err);
+      setError(
+        err.response?.data?.detail || 
+        'Usuario o contraseña incorrectos. Por favor, intente nuevamente.'
+      );
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleApplyPreset = (user: string, pass: string) => {
