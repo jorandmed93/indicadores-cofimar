@@ -6,9 +6,40 @@ import {
   LineChart, Line, Legend
 } from 'recharts';
 
+const SECTOR_COORDINATES: { [key: string]: { x: number; y: number; w: number; h: number; zone: string } } = {
+  'BARRACUDA': { x: 50, y: 80, w: 120, h: 70, zone: 'Zona Norte' },
+  'CATANUDA': { x: 190, y: 80, w: 120, h: 70, zone: 'Zona Norte' },
+  'CHERNA': { x: 330, y: 80, w: 120, h: 70, zone: 'Zona Norte' },
+  'DELFIN': { x: 470, y: 80, w: 120, h: 70, zone: 'Zona Norte' },
+  'GUATO': { x: 610, y: 80, w: 120, h: 70, zone: 'Zona Norte' },
+  'WAHOO': { x: 750, y: 80, w: 120, h: 70, zone: 'Zona Norte' },
+
+  'DORADO': { x: 50, y: 190, w: 120, h: 70, zone: 'Zona Centro' },
+  'MERO': { x: 190, y: 190, w: 120, h: 70, zone: 'Zona Centro' },
+  'PAMPANO': { x: 330, y: 190, w: 120, h: 70, zone: 'Zona Centro' },
+  'PARGO ROJO': { x: 470, y: 190, w: 120, h: 70, zone: 'Zona Centro' },
+  'ROBALO': { x: 610, y: 190, w: 120, h: 70, zone: 'Zona Centro' },
+  'TAMBULERO': { x: 750, y: 190, w: 120, h: 70, zone: 'Zona Centro' },
+
+  'MANTARRAYA': { x: 50, y: 300, w: 120, h: 70, zone: 'Zona Sur' },
+  'TIBURON': { x: 190, y: 300, w: 120, h: 70, zone: 'Zona Sur' },
+  'TUNA': { x: 330, y: 300, w: 120, h: 70, zone: 'Zona Sur' },
+  'PI': { x: 470, y: 300, w: 120, h: 70, zone: 'Zona Sur' },
+  'PT': { x: 610, y: 300, w: 120, h: 70, zone: 'Zona Sur' },
+
+  'K1': { x: 50, y: 410, w: 100, h: 60, zone: 'Zona Especial' },
+  'K2': { x: 170, y: 410, w: 100, h: 60, zone: 'Zona Especial' },
+  'K3': { x: 290, y: 410, w: 100, h: 60, zone: 'Zona Especial' },
+  'OR': { x: 410, y: 410, w: 100, h: 60, zone: 'Zona Especial' },
+  'R1': { x: 530, y: 410, w: 100, h: 60, zone: 'Zona Especial' },
+  'R2': { x: 650, y: 410, w: 100, h: 60, zone: 'Zona Especial' },
+};
+
 const Summary: React.FC = () => {
-  const [activeSubTab, setActiveSubTab] = useState<'sector' | 'aguaje' | 'month'>('sector');
+  const [activeSubTab, setActiveSubTab] = useState<'map' | 'sector' | 'aguaje' | 'month'>('map');
   const [loading, setLoading] = useState(true);
+  const [mapMetric, setMapMetric] = useState<'lbs_ha' | 'survival'>('lbs_ha');
+  const [mapTooltip, setMapTooltip] = useState<{ sectorName: string; x: number; y: number; data: any } | null>(null);
   
   const [sectorsData, setSectorsData] = useState<any[]>([]);
   const [aguajesData, setAguajesData] = useState<any[]>([]);
@@ -18,6 +49,19 @@ const Summary: React.FC = () => {
   const [selectedGroup, setSelectedGroup] = useState<{ type: 'sector' | 'aguaje' | 'month'; name: string; params: any } | null>(null);
   const [groupCycles, setGroupCycles] = useState<any[]>([]);
   const [loadingCycles, setLoadingCycles] = useState(false);
+
+  const handleMapMouseEnter = (sectorName: string, data: any, e: React.MouseEvent) => {
+    setMapTooltip({
+      sectorName,
+      x: e.clientX,
+      y: e.clientY,
+      data
+    });
+  };
+
+  const handleMapMouseLeave = () => {
+    setMapTooltip(null);
+  };
 
   useEffect(() => {
     setLoading(true);
@@ -55,6 +99,7 @@ const Summary: React.FC = () => {
   };
 
   const subTabs = [
+    { id: 'map', label: 'Mapa de Sectores', icon: Compass },
     { id: 'sector', label: 'Resumen por Sector', icon: BarChart3 },
     { id: 'aguaje', label: 'Resumen por Aguaje', icon: TrendingUp },
     { id: 'month', label: 'Resumen Mensual', icon: Calendar },
@@ -173,6 +218,222 @@ const Summary: React.FC = () => {
         </div>
       ) : (
         <div className="space-y-8">
+          {/* MAPA DE SECTORES */}
+          {activeSubTab === 'map' && (
+            <div className="space-y-6">
+              <div className="glass-card p-6 rounded-2xl shadow-sm border border-cofimar-border">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-cofimar-border/50 pb-5 mb-6">
+                  <div>
+                    <h3 className="text-lg font-bold text-cofimar-text flex items-center gap-2">
+                      <span>Mapa Interactivo de Sectores</span>
+                      <span className="text-[10px] font-mono font-bold bg-cofimar-primary/10 text-cofimar-primary border border-cofimar-primary/20 px-2 py-0.5 rounded-full">LIVE PERFORMANCE</span>
+                    </h3>
+                    <p className="text-xs text-cofimar-text-muted mt-1">
+                      Esquema espacial coloreado por rendimiento de cosecha. Haz clic en un sector para abrir su bitácora de ciclos.
+                    </p>
+                  </div>
+
+                  <div className="flex items-center gap-4 no-print">
+                    <span className="text-xs font-bold font-mono text-cofimar-text-muted">MÉTRICA ACTIVA:</span>
+                    <div className="flex bg-cofimar-surface-secondary border border-cofimar-border p-0.5 rounded-lg">
+                      <button
+                        onClick={() => setMapMetric('lbs_ha')}
+                        className={`px-3 py-1.5 text-[10px] font-bold font-mono rounded-md transition ${
+                          mapMetric === 'lbs_ha'
+                            ? 'bg-cofimar-surface text-cofimar-primary shadow-xs'
+                            : 'text-cofimar-text-muted hover:text-cofimar-text'
+                        }`}
+                      >
+                        LBS/HA
+                      </button>
+                      <button
+                        onClick={() => setMapMetric('survival')}
+                        className={`px-3 py-1.5 text-[10px] font-bold font-mono rounded-md transition ${
+                          mapMetric === 'survival'
+                            ? 'bg-cofimar-surface text-cofimar-primary shadow-xs'
+                            : 'text-cofimar-text-muted hover:text-cofimar-text'
+                        }`}
+                      >
+                        SOBREVIVENCIA %
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Map Grid Container */}
+                <div className="relative overflow-x-auto border border-cofimar-border/60 rounded-xl bg-cofimar-surface-secondary/20 p-6 flex justify-center">
+                  <div className="relative w-[920px] h-[520px] select-none flex-shrink-0">
+                    
+                    {/* Canal de Abastecimiento Principal (Water Canal) */}
+                    <svg className="absolute inset-0 w-full h-full pointer-events-none z-0">
+                      <defs>
+                        <linearGradient id="canalGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                          <stop offset="0%" stopColor="#007AFF" stopOpacity="0.05" />
+                          <stop offset="50%" stopColor="#007AFF" stopOpacity="0.15" />
+                          <stop offset="100%" stopColor="#007AFF" stopOpacity="0.05" />
+                        </linearGradient>
+                      </defs>
+                      
+                      {/* Ocean/Estuary Input left */}
+                      <path d="M 0,40 L 40,40" stroke="#007AFF" strokeWidth="4" strokeDasharray="5,3" opacity="0.6" />
+                      <text x="5" y="30" fill="#007AFF" fontSize="8" fontFamily="monospace" fontWeight="bold">ESTUARIO</text>
+
+                      {/* Main supply canal line */}
+                      <rect x="40" y="25" width="840" height="30" rx="6" fill="url(#canalGradient)" stroke="#007AFF" strokeWidth="1" opacity="0.7" />
+                      <text x="440" y="44" fill="#007AFF" fontSize="9" fontFamily="monospace" fontWeight="bold" letterSpacing="2" textAnchor="middle">CANAL DE ABASTECIMIENTO GENERAL</text>
+                      
+                      {/* Flow vectors from canal to sectors */}
+                      {Object.keys(SECTOR_COORDINATES).map((key, idx) => {
+                        const coord = SECTOR_COORDINATES[key];
+                        if (coord.zone === 'Zona Norte') {
+                          return (
+                            <g key={idx}>
+                              <path d={`M ${coord.x + 60},55 L ${coord.x + 60},80`} stroke="#007AFF" strokeWidth="1.5" strokeDasharray="3,3" opacity="0.5" />
+                              <polygon points={`${coord.x + 60},80 ${coord.x + 57},75 ${coord.x + 63},75`} fill="#007AFF" opacity="0.6" />
+                            </g>
+                          );
+                        }
+                        return null;
+                      })}
+                    </svg>
+
+                    {/* Sector Cards */}
+                    {Object.keys(SECTOR_COORDINATES).map((sectorName) => {
+                      const coord = SECTOR_COORDINATES[sectorName];
+                      // Find real sector data from API
+                      const sectorInfo = sectorsData.find(
+                        s => s.sector.toUpperCase() === sectorName.toUpperCase()
+                      );
+
+                      // Calculate performance color
+                      let bgColor = 'rgba(142, 142, 147, 0.04)';
+                      let borderColor = 'var(--cofimar-border)';
+                      let textColor = 'var(--cofimar-text-muted)';
+                      let badgeBg = 'var(--cofimar-badge-bg)';
+                      let badgeText = 'var(--cofimar-badge-text)';
+                      let badgeLabel = 'INACTIVO';
+                      let valStr = 'S/D';
+
+                      if (sectorInfo) {
+                        const lbsHaVal = parseFloat(sectorInfo.avg_lbs_ha || 0);
+                        const survVal = parseFloat(sectorInfo.avg_survival || 0);
+
+                        if (mapMetric === 'lbs_ha') {
+                          valStr = `${Math.round(lbsHaVal).toLocaleString()} LBS/HA`;
+                          if (lbsHaVal >= 3500) {
+                            bgColor = 'rgba(52, 199, 89, 0.08)';
+                            borderColor = '#34C759';
+                            textColor = '#34C759';
+                            badgeBg = 'rgba(52, 199, 89, 0.1)';
+                            badgeText = '#34C759';
+                            badgeLabel = 'ALTA EFIC.';
+                          } else if (lbsHaVal >= 2000) {
+                            bgColor = 'rgba(255, 149, 0, 0.08)';
+                            borderColor = '#FF9500';
+                            textColor = '#FF9500';
+                            badgeBg = 'rgba(255, 149, 0, 0.1)';
+                            badgeText = '#FF9500';
+                            badgeLabel = 'REGULAR';
+                          } else {
+                            bgColor = 'rgba(255, 59, 48, 0.08)';
+                            borderColor = '#FF3B30';
+                            textColor = '#FF3B30';
+                            badgeBg = 'rgba(255, 59, 48, 0.1)';
+                            badgeText = '#FF3B30';
+                            badgeLabel = 'ALERTA';
+                          }
+                        } else {
+                          valStr = `${survVal.toFixed(1)}% SOBR.`;
+                          if (survVal >= 75) {
+                            bgColor = 'rgba(52, 199, 89, 0.08)';
+                            borderColor = '#34C759';
+                            textColor = '#34C759';
+                            badgeBg = 'rgba(52, 199, 89, 0.1)';
+                            badgeText = '#34C759';
+                            badgeLabel = 'ALTA';
+                          } else if (survVal >= 55) {
+                            bgColor = 'rgba(255, 149, 0, 0.08)';
+                            borderColor = '#FF9500';
+                            textColor = '#FF9500';
+                            badgeBg = 'rgba(255, 149, 0, 0.1)';
+                            badgeText = '#FF9500';
+                            badgeLabel = 'MEDIA';
+                          } else {
+                            bgColor = 'rgba(255, 59, 48, 0.08)';
+                            borderColor = '#FF3B30';
+                            textColor = '#FF3B30';
+                            badgeBg = 'rgba(255, 59, 48, 0.1)';
+                            badgeText = '#FF3B30';
+                            badgeLabel = 'BAJA';
+                          }
+                        }
+                      }
+
+                      return (
+                        <div
+                          key={sectorName}
+                          style={{
+                            left: coord.x,
+                            top: coord.y,
+                            width: coord.w,
+                            height: coord.h,
+                            backgroundColor: bgColor,
+                            borderColor: borderColor,
+                          }}
+                          onClick={() => handleRowClick('sector', sectorName, { sector: sectorName })}
+                          onMouseEnter={(e) => handleMapMouseEnter(sectorName, sectorInfo, e)}
+                          onMouseLeave={handleMapMouseLeave}
+                          className="absolute border rounded-xl p-3 flex flex-col justify-between cursor-pointer transition-all duration-200 hover:-translate-y-1 hover:shadow-lg hover:brightness-105 active:scale-95 group z-10"
+                        >
+                          <div className="flex items-start justify-between min-w-0">
+                            <span className="text-[10px] font-mono font-bold tracking-tight text-cofimar-text truncate pr-1">
+                              {sectorName}
+                            </span>
+                            <span
+                              style={{ backgroundColor: badgeBg, color: badgeText }}
+                              className="text-[7px] font-mono font-bold px-1 py-0.5 rounded-sm flex-shrink-0"
+                            >
+                              {badgeLabel}
+                            </span>
+                          </div>
+
+                          <div className="flex flex-col mt-1">
+                            <span className="text-xs font-mono font-bold tracking-tighter" style={{ color: textColor }}>
+                              {valStr}
+                            </span>
+                            <span className="text-[8px] font-sans text-cofimar-text-muted mt-0.5">
+                              {sectorInfo ? `${sectorInfo.cycle_count} Ciclos` : 'Sin datos'}
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Legend & Color Scale description */}
+                <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 mt-6 pt-5 border-t border-cofimar-border/50 text-xs font-mono no-print">
+                  <div className="flex items-center gap-2">
+                    <div className="w-3.5 h-3.5 rounded bg-emerald-500/10 border border-emerald-500" />
+                    <span className="text-cofimar-text-muted">Desempeño Alto</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-3.5 h-3.5 rounded bg-orange-500/10 border border-orange-500" />
+                    <span className="text-cofimar-text-muted">Desempeño Regular</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-3.5 h-3.5 rounded bg-red-500/10 border border-red-500" />
+                    <span className="text-cofimar-text-muted">Desempeño Crítico</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-3.5 h-3.5 rounded bg-zinc-500/5 border border-zinc-500/30" />
+                    <span className="text-cofimar-text-muted">Sin Datos / Inactivo</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* SECTORS */}
           {activeSubTab === 'sector' && (
             <div className="space-y-7">
@@ -348,6 +609,56 @@ const Summary: React.FC = () => {
               )}
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Floating Map Tooltip */}
+      {mapTooltip && (
+        <div
+          style={{ left: mapTooltip.x, top: mapTooltip.y }}
+          className="fixed z-50 pointer-events-none transform -translate-x-1/2 -translate-y-[calc(100%+12px)] animate-fadeIn no-print"
+        >
+          <div className="bg-cofimar-surface/95 backdrop-blur-md border border-cofimar-border p-4 rounded-xl shadow-2xl w-60 space-y-2.5">
+            <div className="border-b border-cofimar-border/60 pb-2">
+              <span className="text-[8px] font-mono text-cofimar-primary uppercase tracking-widest font-bold block">
+                {SECTOR_COORDINATES[mapTooltip.sectorName]?.zone || 'Sector Cofimar'}
+              </span>
+              <h4 className="text-sm font-bold text-cofimar-text mt-0.5">
+                Sector: {mapTooltip.sectorName}
+              </h4>
+            </div>
+
+            {mapTooltip.data ? (
+              <div className="space-y-1.5 font-mono text-[10px]">
+                <div className="flex justify-between">
+                  <span className="text-cofimar-text-muted">Ciclos Totales:</span>
+                  <span className="font-bold text-cofimar-text">{mapTooltip.data.cycle_count}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-cofimar-text-muted">Promedio Días:</span>
+                  <span className="font-bold text-cofimar-text">{Math.round(parseFloat(mapTooltip.data.avg_days || 0))} d</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-cofimar-text-muted">Sobrevivencia:</span>
+                  <span className="font-bold text-cofimar-success">{parseFloat(mapTooltip.data.avg_survival || 0).toFixed(1)}%</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-cofimar-text-muted">Promedio FCA:</span>
+                  <span className="font-bold text-cofimar-text">{parseFloat(mapTooltip.data.avg_fca || 0).toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between border-t border-cofimar-border/40 pt-1.5 mt-1.5">
+                  <span className="text-cofimar-text-muted">Rendimiento:</span>
+                  <span className="font-bold text-cofimar-primary">{Math.round(parseFloat(mapTooltip.data.avg_lbs_ha || 0)).toLocaleString()} LBS/HA</span>
+                </div>
+              </div>
+            ) : (
+              <p className="text-[10px] text-cofimar-text-muted italic">
+                Sin ciclos registrados en este período.
+              </p>
+            )}
+          </div>
+          {/* Tooltip caret arrow */}
+          <div className="w-3 h-3 bg-cofimar-surface border-r border-b border-cofimar-border transform rotate-45 absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1.5" />
         </div>
       )}
     </div>
