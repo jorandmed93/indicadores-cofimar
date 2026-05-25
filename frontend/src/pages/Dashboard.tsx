@@ -196,6 +196,22 @@ const Dashboard: React.FC<DashboardProps> = ({ setActiveTab, setSelectedPondCode
 
   return (
     <div className="space-y-7 p-8 pt-4">
+      {/* Executive PDF Print Header */}
+      <div className="hidden print:flex flex-row justify-between items-center border-b-2 border-cofimar-primary pb-4 mb-6 w-full font-mono text-[10px] text-cofimar-text-muted">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-lg bg-cofimar-primary flex items-center justify-center text-white font-bold text-sm tracking-tighter">
+            CF
+          </div>
+          <div>
+            <h1 className="text-sm font-bold text-cofimar-text tracking-wider">GRUPO COFIMAR</h1>
+            <p className="text-[8px] uppercase tracking-widest text-cofimar-primary">Consola de Indicadores Generales</p>
+          </div>
+        </div>
+        <div className="text-right flex flex-col items-end">
+          <p className="font-bold text-cofimar-text">REPORTE EJECUTIVO ANUAL (BASE 2026)</p>
+          <p className="text-[8px] mt-0.5">FECHA: {new Date().toLocaleDateString()} &bull; USUARIO: ADMINISTRADOR</p>
+        </div>
+      </div>
       
       {/* View Switcher Controls */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-cofimar-border/50 pb-5">

@@ -168,6 +168,23 @@ const Summary: React.FC = () => {
 
   return (
     <div className="p-8 space-y-7">
+      {/* Executive PDF Print Header */}
+      <div className="hidden print:flex flex-row justify-between items-center border-b-2 border-cofimar-primary pb-4 mb-6 w-full font-mono text-[10px] text-cofimar-text-muted">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-lg bg-cofimar-primary flex items-center justify-center text-white font-bold text-sm tracking-tighter">
+            CF
+          </div>
+          <div>
+            <h1 className="text-sm font-bold text-cofimar-text tracking-wider">GRUPO COFIMAR</h1>
+            <p className="text-[8px] uppercase tracking-widest text-cofimar-primary">Resúmenes y Pivots Consolidados</p>
+          </div>
+        </div>
+        <div className="text-right flex flex-col items-end">
+          <p className="font-bold text-cofimar-text">REPORTE DE DESEMPEÑO DE SECTORES Y MAREAS</p>
+          <p className="text-[8px] mt-0.5">FECHA: {new Date().toLocaleDateString()} &bull; USUARIO: ADMINISTRADOR</p>
+        </div>
+      </div>
+      
       {/* Title */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
