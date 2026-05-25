@@ -266,9 +266,9 @@ function App() {
       case 'crud':
         return <RegistroData role={role} />;
       case 'users':
-        return <Users />;
+        return user.username === 'admin' ? <Users /> : <Dashboard setActiveTab={setActiveTab} setSelectedPondCode={setSelectedPondCode} />;
       case 'audit':
-        return <Bitacora />;
+        return user.username === 'admin' ? <Bitacora /> : <Dashboard setActiveTab={setActiveTab} setSelectedPondCode={setSelectedPondCode} />;
       case 'pondDetail':
         return <PondDetail pondCode={selectedPondCode} onClose={() => { setActiveTab('dashboard'); setSelectedPondCode(''); }} />;
       default:

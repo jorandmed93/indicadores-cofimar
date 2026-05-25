@@ -8,7 +8,7 @@ from ..database import get_db
 from ..models import User
 from ..schemas import User as UserSchema, UserCreate, UserUpdate, UserLogin
 from ..security import hash_password, verify_password, create_access_token
-from ..auth import require_admin
+from ..auth import require_admin, require_superuser
 from ..services.audit import log_change, create_notification
 
 router = APIRouter(prefix="/users", tags=["Users"])
@@ -17,11 +17,11 @@ router = APIRouter(prefix="/users", tags=["Users"])
 FAILED_LOGIN_ATTEMPTS = defaultdict(lambda: {"attempts": 0, "lockout_until": 0.0})
 
 @router.get("", response_model=List[UserSchema])
-def get_users(db: Session = Depends(get_db), current_user: dict = Depends(require_admin)):
+def get_users(db: Session = Depends(get_db), current_user: dict = Depends(require_superuser)):
     return db.query(User).order_by(User.id).all()
 
 @router.post("", response_model=UserSchema)
-def create_user(user_in: UserCreate, db: Session = Depends(get_db), current_user: dict = Depends(require_admin)):
+def create_user(user_in: UserCreate, db: Session = Depends(get_db), current_user: dict = Depends(require_superuser)):
     # Check if username already exists
     existing = db.query(User).filter(User.username == user_in.username).first()
     if existing:
@@ -57,7 +57,7 @@ def create_user(user_in: UserCreate, db: Session = Depends(get_db), current_user
     return db_user
 
 @router.put("/{user_id}", response_model=UserSchema)
-def update_user(user_id: int, user_in: UserUpdate, db: Session = Depends(get_db), current_user: dict = Depends(require_admin)):
+def update_user(user_id: int, user_in: UserUpdate, db: Session = Depends(get_db), current_user: dict = Depends(require_superuser)):
     db_user = db.query(User).filter(User.id == user_id).first()
     if not db_user:
         raise HTTPException(
@@ -91,7 +91,7 @@ def update_user(user_id: int, user_in: UserUpdate, db: Session = Depends(get_db)
     return db_user
 
 @router.delete("/{user_id}")
-def delete_user(user_id: int, db: Session = Depends(get_db), current_user: dict = Depends(require_admin)):
+def delete_user(user_id: int, db: Session = Depends(get_db), current_user: dict = Depends(require_superuser)):
     db_user = db.query(User).filter(User.id == user_id).first()
     if not db_user:
         raise HTTPException(

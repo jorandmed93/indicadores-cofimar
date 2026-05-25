@@ -5,7 +5,7 @@ from datetime import datetime
 
 from ..database import get_db
 from ..models import AuditLog, Notification
-from ..auth import get_current_user, require_admin
+from ..auth import get_current_user, require_admin, require_superuser
 
 router = APIRouter(prefix="/audit", tags=["Audit & Notifications"])
 
@@ -16,7 +16,7 @@ def get_audit_logs(
     entity: Optional[str] = Query(None),
     action: Optional[str] = Query(None),
     limit: int = Query(50, ge=1, le=200),
-    current_user: dict = Depends(require_admin)
+    current_user: dict = Depends(require_superuser)
 ):
     query = db.query(AuditLog)
     if username:

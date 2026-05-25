@@ -52,3 +52,19 @@ def require_admin(
             detail="Acceso denegado: se requiere rol de Administrador para esta operación."
         )
     return current_user
+
+
+def require_superuser(
+    current_user: dict = Depends(get_current_user)
+) -> dict:
+    """
+    Dependency: Ensures the current user is the super administrator (username == 'admin').
+    Raises 403 if the user is not 'admin'.
+    """
+    if current_user.get("sub") != "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Acceso denegado: se requieren permisos de Super Administrador para esta operación."
+        )
+    return current_user
+
