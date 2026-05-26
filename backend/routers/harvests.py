@@ -157,6 +157,7 @@ def create_harvest(harvest_in: HarvestCreate, db: Session = Depends(get_db), cur
         active_cycle.feed_lbs = db_harvest.feed_lbs or 0.0
         active_cycle.feed_supplier = db_harvest.feed_supplier
         active_cycle.feeding_mode = db_harvest.feeding_mode or "AUTOMATICA"
+        active_cycle.is_closed = True
         calc_kpis(active_cycle)
         db.commit()
 

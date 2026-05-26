@@ -48,6 +48,7 @@ export const CrudModal: React.FC<CrudModalProps> = ({
 }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [activePondCodes, setActivePondCodes] = useState<string[]>([]);
 
   // Forms
   const [pondForm, setPondForm] = useState({
@@ -124,6 +125,20 @@ export const CrudModal: React.FC<CrudModalProps> = ({
   useEffect(() => {
     if (!isOpen) return;
     setError(null);
+
+    const fetchActiveCycles = async () => {
+      try {
+        const res = await client.get('/cycles', { params: { limit: 100, is_closed: false } });
+        const codes = (res.data.data || []).map((c: any) => c.pond_code.trim().toUpperCase());
+        setActivePondCodes(codes);
+      } catch (err) {
+        console.error('Error fetching active cycles for validation:', err);
+      }
+    };
+
+    if (activeTab === 'seedings' && !editMode) {
+      fetchActiveCycles();
+    }
 
     const fetchRecord = async () => {
       setLoading(true);
@@ -642,9 +657,14 @@ export const CrudModal: React.FC<CrudModalProps> = ({
                   className="w-full bg-cofimar-bg/50 border border-cofimar-border rounded-lg px-4 py-2.5 font-mono text-sm text-cofimar-text focus:outline-none focus:border-cofimar-primary focus:ring-1 focus:ring-cofimar-primary/30 transition-all duration-200"
                 >
                   <option value="">Seleccione Piscina...</option>
-                  {allPondsCatalog.map((p) => (
-                    <option key={p.code} value={p.code}>{p.code}</option>
-                  ))}
+                  {allPondsCatalog.map((p) => {
+                    const hasActiveCycle = activePondCodes.includes(p.code.trim().toUpperCase());
+                    return (
+                      <option key={p.code} value={p.code} disabled={hasActiveCycle && !editMode}>
+                        {p.code} {hasActiveCycle ? '⚠️ (Ciclo Activo Abierto)' : ''}
+                      </option>
+                    );
+                  })}
                 </select>
               </div>
 
