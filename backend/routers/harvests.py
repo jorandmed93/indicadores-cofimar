@@ -199,6 +199,16 @@ def create_harvest(harvest_in: HarvestCreate, db: Session = Depends(get_db), cur
         
     return db_harvest
 
+@router.get("/{id}", response_model=HarvestSchema)
+def get_harvest(id: int, db: Session = Depends(get_db)):
+    db_harvest = db.query(Harvest).filter(Harvest.id == id).first()
+    if not db_harvest:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Harvest with ID {id} not found"
+        )
+    return db_harvest
+
 @router.put("/{id}", response_model=HarvestSchema)
 def update_harvest(id: int, harvest_in: HarvestCreate, db: Session = Depends(get_db), current_user: dict = Depends(require_admin)):
     db_harvest = db.query(Harvest).filter(Harvest.id == id).first()

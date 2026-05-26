@@ -109,6 +109,23 @@ def create_seeding(seeding_in: SeedingCreate, db: Session = Depends(get_db), cur
     
     return db_seeding
 
+@router.get("/{id}", response_model=SeedingSchema)
+def get_seeding(id: int, db: Session = Depends(get_db)):
+    db_seeding = db.query(Seeding).filter(Seeding.id == id).first()
+    if not db_seeding:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Seeding with ID {id} not found"
+        )
+    # Match cycle closed status
+    from ..models import Cycle
+    match_cycle = db.query(Cycle).filter(
+        Cycle.pond_code == db_seeding.pond_code,
+        Cycle.seeding_date == db_seeding.seeding_date
+    ).first()
+    db_seeding.is_closed = match_cycle.is_closed if match_cycle else False
+    return db_seeding
+
 @router.put("/{id}", response_model=SeedingSchema)
 def update_seeding(id: int, seeding_in: SeedingCreate, db: Session = Depends(get_db), current_user: dict = Depends(require_admin)):
     db_seeding = db.query(Seeding).filter(Seeding.id == id).first()

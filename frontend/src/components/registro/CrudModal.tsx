@@ -142,8 +142,8 @@ export const CrudModal: React.FC<CrudModalProps> = ({
               });
             }
           } else if (activeTab === 'harvests') {
-            const res = await client.get(`/harvests`, { params: { limit: 1000 } });
-            const matched = res.data.data.find((h: any) => h.id === selectedId);
+            const res = await client.get(`/harvests/${selectedId}`);
+            const matched = res.data;
             if (matched) {
               setHarvestForm({
                 pond_code: matched.pond_code || '',
@@ -161,8 +161,8 @@ export const CrudModal: React.FC<CrudModalProps> = ({
               });
             }
           } else if (activeTab === 'seedings') {
-            const res = await client.get(`/seedings`);
-            const matched = res.data.find((s: any) => s.id === selectedId);
+            const res = await client.get(`/seedings/${selectedId}`);
+            const matched = res.data;
             if (matched) {
               setSeedingForm({
                 pond_code: matched.pond_code || '',
