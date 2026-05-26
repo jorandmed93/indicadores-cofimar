@@ -208,6 +208,11 @@ def export_cycles(
         response.headers["Content-Disposition"] = "attachment; filename=indicadores_ciclos.xlsx"
         return response
 
+@router.get("/active-pond-codes", response_model=List[str])
+def get_active_pond_codes(db: Session = Depends(get_db)):
+    active_cycles = db.query(Cycle.pond_code).filter(Cycle.is_closed == False).all()
+    return list(set(c[0].strip().upper() for c in active_cycles if c[0]))
+
 @router.get("/{id}", response_model=CycleSchema)
 def get_cycle_detail(id: int, db: Session = Depends(get_db)):
     cycle = db.query(Cycle).filter(Cycle.id == id).first()

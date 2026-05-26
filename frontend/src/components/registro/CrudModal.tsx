@@ -128,8 +128,8 @@ export const CrudModal: React.FC<CrudModalProps> = ({
 
     const fetchActiveCycles = async () => {
       try {
-        const res = await client.get('/cycles', { params: { limit: 100, is_closed: false } });
-        const codes = (res.data.data || []).map((c: any) => c.pond_code.trim().toUpperCase());
+        const res = await client.get('/cycles/active-pond-codes');
+        const codes = (res.data || []).map((c: string) => c.trim().toUpperCase());
         setActivePondCodes(codes);
       } catch (err) {
         console.error('Error fetching active cycles for validation:', err);

@@ -77,7 +77,11 @@ from ..schemas import HarvestCreate, Harvest as HarvestSchema
 def create_harvest(harvest_in: HarvestCreate, db: Session = Depends(get_db), current_user: dict = Depends(require_admin)):
     from ..models import Cycle, Pond
     from ..services.kpi_calculator import calc_kpis
+    from sqlalchemy import func
     
+    if harvest_in.pond_code:
+        harvest_in.pond_code = harvest_in.pond_code.strip().upper()
+        
     db_harvest = Harvest(**harvest_in.dict())
     
     # Calculate month and sector if not provided
@@ -92,7 +96,7 @@ def create_harvest(harvest_in: HarvestCreate, db: Session = Depends(get_db), cur
         
     # Check if there is an active (open) cycle for this pool
     active_cycle = db.query(Cycle).filter(
-        Cycle.pond_code == db_harvest.pond_code,
+        func.upper(func.trim(Cycle.pond_code)) == db_harvest.pond_code,
         Cycle.is_closed == False
     ).first()
     
@@ -218,6 +222,9 @@ def update_harvest(id: int, harvest_in: HarvestCreate, db: Session = Depends(get
             status_code=404,
             detail=f"Harvest with ID {id} not found"
         )
+    if harvest_in.pond_code:
+        harvest_in.pond_code = harvest_in.pond_code.strip().upper()
+        
     from copy import copy
     old_state = copy(db_harvest)
 

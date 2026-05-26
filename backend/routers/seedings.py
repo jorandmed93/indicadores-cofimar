@@ -46,9 +46,14 @@ def get_seedings(
 @router.post("", response_model=SeedingSchema)
 def create_seeding(seeding_in: SeedingCreate, db: Session = Depends(get_db), current_user: dict = Depends(require_admin)):
     from ..models import Cycle, Pond
+    from sqlalchemy import func
+    
+    if seeding_in.pond_code:
+        seeding_in.pond_code = seeding_in.pond_code.strip().upper()
+        
     # 1. Check if there's already an active (open) cycle for this pool
     active_cycle = db.query(Cycle).filter(
-        Cycle.pond_code == seeding_in.pond_code,
+        func.upper(func.trim(Cycle.pond_code)) == seeding_in.pond_code,
         Cycle.is_closed == False
     ).first()
     
@@ -134,6 +139,9 @@ def update_seeding(id: int, seeding_in: SeedingCreate, db: Session = Depends(get
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Seeding with ID {id} not found"
         )
+    if seeding_in.pond_code:
+        seeding_in.pond_code = seeding_in.pond_code.strip().upper()
+        
     from copy import copy
     old_state = copy(db_seeding)
 

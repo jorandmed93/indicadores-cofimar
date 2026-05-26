@@ -66,7 +66,7 @@ def clean_int(val):
 def clean_str(val):
     if pd.isna(val) or val is None:
         return None
-    return str(val).strip()
+    return str(val).strip().upper()
 
 def import_excel_file(file_path: str, db: Session):
     errors = []
