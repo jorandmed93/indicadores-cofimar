@@ -24,6 +24,23 @@ const Import: React.FC<ImportProps> = ({ role }) => {
     }
   };
 
+  const handleReseed = async () => {
+    setLoading(true);
+    setError(null);
+    setResult(null);
+    setProgress('Re-sembrando base de datos desde el archivo del Repositorio...');
+
+    try {
+      const res = await client.post('/import/reseed');
+      setResult(res.data.details);
+      setLoading(false);
+    } catch (err: any) {
+      console.error(err);
+      setError(err.response?.data?.detail || 'Ocurrió un error al re-sembrar la base de datos.');
+      setLoading(false);
+    }
+  };
+
   const handleUpload = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!file) return;
@@ -110,13 +127,33 @@ const Import: React.FC<ImportProps> = ({ role }) => {
               </div>
             </div>
 
-            {file && (
+            {file ? (
               <button
                 type="submit"
                 className="w-full bg-cofimar-primary hover:bg-cofimar-primary/95 text-white font-bold py-3 rounded-lg transition duration-200 shadow-lg shadow-cofimar-primary/25 font-mono text-sm"
               >
                 MIGRAR & PROCESAR BASE DE DATOS
               </button>
+            ) : (
+              <div className="border border-cofimar-border/60 rounded-lg p-5 bg-cofimar-surface-secondary/20 space-y-3 mt-4">
+                <div className="flex items-start space-x-3 text-left">
+                  <RefreshCcw className="w-4 h-4 text-cofimar-primary mt-0.5 flex-shrink-0 animate-spin" style={{ animationDuration: '3s' }} />
+                  <div className="space-y-1">
+                    <h4 className="text-xs font-bold text-cofimar-text uppercase tracking-wider font-mono">Sincronización Rápida (Repositorio)</h4>
+                    <p className="text-[11px] text-cofimar-text-muted leading-relaxed">
+                      ¿Has subido o actualizado el archivo <strong className="text-cofimar-primary font-mono">BASE INDICADORES 2026.xlsm</strong> en tu repositorio de GitHub? Recarga toda la base de datos local y recalcula KPIs con un solo clic.
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleReseed}
+                  className="w-full flex items-center justify-center space-x-2 bg-cofimar-surface-secondary hover:bg-cofimar-primary hover:text-white border border-cofimar-border hover:border-cofimar-primary py-2.5 rounded-lg transition-all duration-200 font-mono text-xs font-bold text-cofimar-text-secondary"
+                >
+                  <RefreshCcw className="w-3.5 h-3.5" />
+                  <span>RECARGAR BASE DE DATOS DESDE ARCHIVO DE REPOSITORIO</span>
+                </button>
+              </div>
             )}
           </form>
         ) : loading ? (
