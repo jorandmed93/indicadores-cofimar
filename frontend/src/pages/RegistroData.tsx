@@ -285,6 +285,21 @@ const RegistroData: React.FC<RegistroDataProps> = ({ role }) => {
               dry_days: updates.dry_days !== undefined ? parseInt(updates.dry_days) : parseInt(currentItem?.dry_days || 0)
             };
             await client.put(`/seedings/${key}`, payload);
+          } else if (activeTab === 'cycles' || activeTab === 'closed_cycles') {
+            const currentItem = cycles.find(c => c.id === parseInt(key));
+            const payload = {
+              pond_code: currentItem?.pond_code,
+              aguaje: updates.aguaje !== undefined ? updates.aguaje : currentItem?.aguaje,
+              harvest_date: updates.harvest_date !== undefined ? updates.harvest_date : currentItem?.harvest_date,
+              hectares: updates.hectares !== undefined ? parseFloat(updates.hectares) : parseFloat(currentItem?.hectares || 0),
+              total_lbs: updates.total_lbs !== undefined ? parseFloat(updates.total_lbs) : parseFloat(currentItem?.total_lbs || 0),
+              lbs_ha: updates.lbs_ha !== undefined ? parseFloat(updates.lbs_ha) : parseFloat(currentItem?.lbs_ha || 0),
+              survival_pct: updates.survival_pct !== undefined ? parseFloat(updates.survival_pct) : parseFloat(currentItem?.survival_pct || 0),
+              feed_lbs: updates.feed_lbs !== undefined ? parseFloat(updates.feed_lbs) : parseFloat(currentItem?.feed_lbs || 0),
+              fca: updates.fca !== undefined ? parseFloat(updates.fca) : parseFloat(currentItem?.fca || 0),
+              is_closed: currentItem?.is_closed
+            };
+            await client.put(`/cycles/${key}`, payload);
           }
         })
       );
@@ -453,7 +468,7 @@ const RegistroData: React.FC<RegistroDataProps> = ({ role }) => {
           )}
 
           {/* Excel Mode Switch Button */}
-          {role === 'admin' && activeTab !== 'cycles' && activeTab !== 'closed_cycles' && (
+          {role === 'admin' && (
             <div className="flex items-center gap-3 pl-4 border-l border-cofimar-border/60 h-10 mt-4 md:mt-0">
               <button
                 onClick={() => {
@@ -526,6 +541,9 @@ const RegistroData: React.FC<RegistroDataProps> = ({ role }) => {
                 onRegisterHarvest={handleRegisterHarvestForCycle} 
                 onEdit={handleOpenEdit} 
                 onDelete={handleDelete} 
+                isExcelMode={isExcelMode}
+                onRowChange={handleRowChange}
+                editedRows={editedRows}
               />
             )}
           </div>
