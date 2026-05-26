@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import client from '../api/client';
 import { 
-  Layers, Anchor, Fish, Plus, AlertTriangle, RefreshCw, CheckCircle2 
+  Layers, Anchor, Fish, Plus, AlertTriangle, RefreshCw, CheckCircle2, Filter, Save 
 } from 'lucide-react';
 
 // Subcomponents
@@ -28,6 +28,14 @@ const RegistroData: React.FC<RegistroDataProps> = ({ role }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
+
+  // Filters State
+  const [selectedPondFilter, setSelectedPondFilter] = useState<string>('');
+  const [selectedSectorFilter, setSelectedSectorFilter] = useState<string>('');
+
+  // Excel Mode (Inline Edit) State
+  const [isExcelMode, setIsExcelMode] = useState<boolean>(false);
+  const [editedRows, setEditedRows] = useState<Record<string, any>>({});
 
   // Form Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -77,6 +85,8 @@ const RegistroData: React.FC<RegistroDataProps> = ({ role }) => {
 
   useEffect(() => {
     fetchData();
+    setIsExcelMode(false);
+    setEditedRows({});
   }, [activeTab]);
 
   useEffect(() => {
@@ -175,6 +185,123 @@ const RegistroData: React.FC<RegistroDataProps> = ({ role }) => {
     loadPondsCatalog();
   };
 
+  // unique sectors list for filter
+  const uniqueSectors = Array.from(
+    new Set(allPondsCatalog.map(p => p.sector).filter(Boolean))
+  ).map((s: any) => s.toUpperCase());
+
+  // Filter lists based on selectedPondFilter and selectedSectorFilter
+  const filteredPonds = ponds.filter(p => {
+    const matchesPond = !selectedPondFilter || p.code === selectedPondFilter;
+    const matchesSector = !selectedSectorFilter || (p.sector && p.sector.toUpperCase() === selectedSectorFilter.toUpperCase());
+    return matchesPond && matchesSector;
+  });
+
+  const filteredSeedings = seedings.filter(s => {
+    const matchesPond = !selectedPondFilter || s.pond_code === selectedPondFilter;
+    const pondInCatalog = allPondsCatalog.find(p => p.code === s.pond_code);
+    const matchesSector = !selectedSectorFilter || (pondInCatalog && pondInCatalog.sector && pondInCatalog.sector.toUpperCase() === selectedSectorFilter.toUpperCase());
+    return matchesPond && matchesSector;
+  });
+
+  const filteredHarvests = harvests.filter(h => {
+    const matchesPond = !selectedPondFilter || h.pond_code === selectedPondFilter;
+    const pondInCatalog = allPondsCatalog.find(p => p.code === h.pond_code);
+    const matchesSector = !selectedSectorFilter || (pondInCatalog && pondInCatalog.sector && pondInCatalog.sector.toUpperCase() === selectedSectorFilter.toUpperCase());
+    return matchesPond && matchesSector;
+  });
+
+  const filteredCycles = cycles.filter(c => {
+    const matchesPond = !selectedPondFilter || c.pond_code === selectedPondFilter;
+    const matchesSector = !selectedSectorFilter || (c.sector && c.sector.toUpperCase() === selectedSectorFilter.toUpperCase());
+    return matchesPond && matchesSector;
+  });
+
+  const handleRowChange = (idOrCode: string, field: string, value: any) => {
+    setEditedRows(prev => {
+      const rowUpdates = prev[idOrCode] || {};
+      return {
+        ...prev,
+        [idOrCode]: {
+          ...rowUpdates,
+          [field]: value
+        }
+      };
+    });
+  };
+
+  const handleSaveExcelChanges = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const keys = Object.keys(editedRows);
+      
+      // Perform updates concurrently
+      await Promise.all(
+        keys.map(async (key) => {
+          const updates = editedRows[key];
+          
+          if (activeTab === 'ponds') {
+            const currentItem = ponds.find(p => p.code === key);
+            const payload = {
+              code: key,
+              sector: updates.sector !== undefined ? updates.sector : currentItem?.sector,
+              hectares: updates.hectares !== undefined ? parseFloat(updates.hectares) : parseFloat(currentItem?.hectares || 0),
+              certification: updates.certification !== undefined ? updates.certification : currentItem?.certification,
+              sector_chief: updates.sector_chief !== undefined ? updates.sector_chief : currentItem?.sector_chief
+            };
+            await client.put(`/ponds/${key}`, payload);
+          } else if (activeTab === 'harvests') {
+            const currentItem = harvests.find(h => h.id === parseInt(key));
+            const payload = {
+              pond_code: updates.pond_code !== undefined ? updates.pond_code : currentItem?.pond_code,
+              activity: updates.activity !== undefined ? updates.activity : currentItem?.activity,
+              harvest_date: updates.harvest_date !== undefined ? updates.harvest_date : currentItem?.harvest_date,
+              lbs_farm: updates.lbs_farm !== undefined ? parseFloat(updates.lbs_farm) : parseFloat(currentItem?.lbs_farm || 0),
+              lbs_plant: updates.lbs_plant !== undefined ? parseFloat(updates.lbs_plant) : parseFloat(currentItem?.lbs_plant || 0),
+              gr_farm: updates.gr_farm !== undefined ? parseFloat(updates.gr_farm) : parseFloat(currentItem?.gr_farm || 0),
+              gr_plant: updates.gr_plant !== undefined ? parseFloat(updates.gr_plant) : parseFloat(currentItem?.gr_plant || 0),
+              sector_chief: updates.sector_chief !== undefined ? updates.sector_chief : currentItem?.sector_chief,
+              certification: updates.certification !== undefined ? updates.certification : currentItem?.certification,
+              feed_lbs: updates.feed_lbs !== undefined ? parseFloat(updates.feed_lbs) : parseFloat(currentItem?.feed_lbs || 0),
+              feed_supplier: updates.feed_supplier !== undefined ? updates.feed_supplier : currentItem?.feed_supplier,
+              feeding_mode: updates.feeding_mode !== undefined ? updates.feeding_mode : currentItem?.feeding_mode
+            };
+            await client.put(`/harvests/${key}`, payload);
+          } else if (activeTab === 'seedings') {
+            const currentItem = seedings.find(s => s.id === parseInt(key));
+            const payload = {
+              pond_code: updates.pond_code !== undefined ? updates.pond_code : currentItem?.pond_code,
+              aguaje: updates.aguaje !== undefined ? updates.aguaje : currentItem?.aguaje,
+              seeding_date: updates.seeding_date !== undefined ? updates.seeding_date : currentItem?.seeding_date,
+              transfer_date: updates.transfer_date !== undefined ? updates.transfer_date : currentItem?.transfer_date,
+              animals: updates.animals !== undefined ? parseInt(updates.animals) : parseInt(currentItem?.animals || 0),
+              ablation: updates.ablation !== undefined ? updates.ablation : currentItem?.ablation,
+              nauplio: updates.nauplio !== undefined ? updates.nauplio : currentItem?.nauplio,
+              laboratory: updates.laboratory !== undefined ? updates.laboratory : currentItem?.laboratory,
+              survival_pct: updates.survival_pct !== undefined ? parseFloat(updates.survival_pct) : parseFloat(currentItem?.survival_pct || 0),
+              pre_criadero: updates.pre_criadero !== undefined ? updates.pre_criadero : currentItem?.pre_criadero,
+              weight_gr: updates.weight_gr !== undefined ? parseFloat(updates.weight_gr) : parseFloat(currentItem?.weight_gr || 0.05),
+              dry_days: updates.dry_days !== undefined ? parseInt(updates.dry_days) : parseInt(currentItem?.dry_days || 0)
+            };
+            await client.put(`/seedings/${key}`, payload);
+          }
+        })
+      );
+      
+      showToast(`¡Cambios guardados correctamente en ${keys.length} registro(s)!`);
+      setEditedRows({});
+      setIsExcelMode(false);
+      fetchData();
+      loadPondsCatalog();
+    } catch (err: any) {
+      console.error(err);
+      setError(err.response?.data?.detail || 'Error al guardar los cambios en lote. Verifique que los campos obligatorios sean correctos.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="p-8 space-y-7 max-w-7xl pt-4">
       {/* Action Header */}
@@ -266,44 +393,134 @@ const RegistroData: React.FC<RegistroDataProps> = ({ role }) => {
         </button>
       </div>
 
+      {/* Advanced Filters & Excel Toggle Panel */}
+      <div className="glass-card p-5 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4 border border-cofimar-border/50 shadow-md">
+        <div className="flex items-center space-x-3">
+          <div className="w-9 h-9 bg-cofimar-primary/10 rounded-xl flex items-center justify-center border border-cofimar-primary/25 shadow-sm">
+            <Filter className="w-4.5 h-4.5 text-cofimar-primary" />
+          </div>
+          <div>
+            <h4 className="text-sm font-display font-bold text-cofimar-text">Filtros de Búsqueda</h4>
+            <p className="text-[10px] text-cofimar-text-muted font-mono">Filtra registros y activa el Modo Excel de edición rápida</p>
+          </div>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-4 flex-1 justify-end">
+          {/* Pond Filter */}
+          <div className="flex flex-col min-w-[160px]">
+            <span className="text-[9px] font-mono text-cofimar-text-muted uppercase tracking-wider mb-1">Filtrar Piscina</span>
+            <select
+              value={selectedPondFilter}
+              onChange={(e) => setSelectedPondFilter(e.target.value)}
+              className="bg-cofimar-surface-secondary border border-cofimar-border text-cofimar-text text-xs px-3.5 py-2 rounded-lg focus:border-cofimar-primary focus:outline-none transition shadow-sm font-mono"
+            >
+              <option value="">TODAS LAS PISCINAS</option>
+              {allPondsCatalog.map(p => (
+                <option key={p.code} value={p.code}>{p.code}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Sector Filter */}
+          <div className="flex flex-col min-w-[160px]">
+            <span className="text-[9px] font-mono text-cofimar-text-muted uppercase tracking-wider mb-1">Filtrar Sector</span>
+            <select
+              value={selectedSectorFilter}
+              onChange={(e) => setSelectedSectorFilter(e.target.value)}
+              className="bg-cofimar-surface-secondary border border-cofimar-border text-cofimar-text text-xs px-3.5 py-2 rounded-lg focus:border-cofimar-primary focus:outline-none transition shadow-sm font-mono"
+            >
+              <option value="">TODOS LOS SECTORES</option>
+              {uniqueSectors.map(sec => (
+                <option key={sec} value={sec}>{sec}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Reset Filters */}
+          {(selectedPondFilter || selectedSectorFilter) && (
+            <div className="flex items-end h-[38px] mt-4 md:mt-0">
+              <button
+                onClick={() => {
+                  setSelectedPondFilter('');
+                  setSelectedSectorFilter('');
+                }}
+                className="flex items-center justify-center space-x-1.5 bg-cofimar-surface-secondary hover:bg-cofimar-surface-hover border border-cofimar-border text-cofimar-text-muted hover:text-cofimar-text px-3.5 h-[36px] rounded-lg transition duration-150 text-xs font-mono shadow-sm"
+              >
+                <RefreshCw className="w-3.5 h-3.5" />
+                <span>LIMPIAR</span>
+              </button>
+            </div>
+          )}
+
+          {/* Excel Mode Switch Button */}
+          {role === 'admin' && activeTab !== 'cycles' && activeTab !== 'closed_cycles' && (
+            <div className="flex items-center gap-3 pl-4 border-l border-cofimar-border/60 h-10 mt-4 md:mt-0">
+              <button
+                onClick={() => {
+                  setIsExcelMode(!isExcelMode);
+                  setEditedRows({}); // Reset changes on toggle
+                }}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg border font-mono text-xs font-bold transition duration-200 shadow-sm ${
+                  isExcelMode
+                    ? 'bg-cofimar-success/15 border-cofimar-success text-cofimar-success shadow-success/10'
+                    : 'bg-cofimar-surface-secondary border-cofimar-border text-cofimar-text-muted hover:text-cofimar-text'
+                }`}
+              >
+                <span className={`w-2 h-2 rounded-full ${isExcelMode ? 'bg-cofimar-success animate-pulse' : 'bg-cofimar-text-muted'}`} />
+                <span>{isExcelMode ? 'MODO EXCEL ACTIVO 📊' : 'ACTIVAR MODO EXCEL 📊'}</span>
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+
       {/* CRUD Tables Container */}
       <div className="glass-card rounded-2xl border border-cofimar-border/50 shadow-xl overflow-hidden">
-        {loading && (
+        {loading && !isExcelMode && (
           <div className="p-16 flex items-center justify-center space-x-3 text-cofimar-text-muted font-mono text-sm">
             <RefreshCw className="w-5 h-5 animate-spin text-cofimar-primary" />
             <span>Cargando registros...</span>
           </div>
         )}
         
-        {!loading && (
+        {(!loading || isExcelMode) && (
           <div className="overflow-x-auto">
             {activeTab === 'ponds' && (
               <PondsTab 
-                ponds={ponds} 
+                ponds={filteredPonds} 
                 role={role} 
                 onEdit={handleOpenEdit} 
                 onDelete={handleDelete} 
+                isExcelMode={isExcelMode}
+                onRowChange={handleRowChange}
+                editedRows={editedRows}
               />
             )}
             {activeTab === 'seedings' && (
               <SeedingsTab 
-                seedings={seedings} 
+                seedings={filteredSeedings} 
                 role={role} 
                 onEdit={handleOpenEdit} 
                 onDelete={handleDelete} 
+                isExcelMode={isExcelMode}
+                onRowChange={handleRowChange}
+                editedRows={editedRows}
               />
             )}
             {activeTab === 'harvests' && (
               <HarvestsTab 
-                harvests={harvests} 
+                harvests={filteredHarvests} 
                 role={role} 
                 onEdit={handleOpenEdit} 
                 onDelete={handleDelete} 
+                isExcelMode={isExcelMode}
+                onRowChange={handleRowChange}
+                editedRows={editedRows}
               />
             )}
             {(activeTab === 'cycles' || activeTab === 'closed_cycles') && (
               <CyclesTab 
-                cycles={cycles} 
+                cycles={filteredCycles} 
                 role={role} 
                 activeTab={activeTab} 
                 onRegisterHarvest={handleRegisterHarvestForCycle} 
@@ -314,6 +531,50 @@ const RegistroData: React.FC<RegistroDataProps> = ({ role }) => {
           </div>
         )}
       </div>
+
+      {/* Floating Save Actions Bar for Excel Mode */}
+      {isExcelMode && Object.keys(editedRows).length > 0 && (
+        <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50 animate-fadeIn">
+          <div className="glass-card bg-cofimar-surface/90 backdrop-blur-md border border-cofimar-success/40 shadow-2xl rounded-2xl px-6 py-4 flex items-center justify-between gap-8 min-w-[420px] max-w-lg">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 bg-cofimar-success/10 border border-cofimar-success/30 rounded-xl flex items-center justify-center">
+                <span className="text-cofimar-success font-mono font-bold animate-pulse text-sm">📊</span>
+              </div>
+              <div className="flex flex-col">
+                <span className="text-xs font-mono font-bold text-cofimar-text">Edición Excel Activa</span>
+                <span className="text-[10px] text-cofimar-text-secondary font-mono">
+                  {Object.keys(editedRows).length} fila(s) modificada(s) sin guardar.
+                </span>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2.5">
+              <button
+                disabled={loading}
+                onClick={() => {
+                  setIsExcelMode(false);
+                  setEditedRows({});
+                }}
+                className="bg-cofimar-surface-secondary hover:bg-cofimar-surface-hover border border-cofimar-border text-cofimar-text font-bold font-mono px-4 py-2 rounded-lg text-xs transition duration-150 disabled:opacity-50"
+              >
+                DESCARTAR
+              </button>
+              <button
+                disabled={loading}
+                onClick={handleSaveExcelChanges}
+                className="bg-cofimar-success hover:bg-cofimar-success/90 text-white font-bold font-mono px-4 py-2 rounded-lg text-xs shadow-md transition duration-150 disabled:opacity-50 flex items-center gap-1.5"
+              >
+                {loading ? (
+                  <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                ) : (
+                  <Save className="w-3.5 h-3.5" />
+                )}
+                <span>GUARDAR</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* CRUD Input Dialog Modal */}
       <CrudModal 
